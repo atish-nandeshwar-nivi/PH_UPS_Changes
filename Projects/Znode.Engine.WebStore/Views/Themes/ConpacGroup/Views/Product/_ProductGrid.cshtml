@@ -1,0 +1,265 @@
+﻿@using Znode.Engine.WebStore.ViewModels
+@model ProductListViewModel
+@{
+    TempData[WebStoreConstants.ProductCount] = Model?.Products?.Count;
+    string searchTerm = Request.QueryString["SearchTerm"]?.ToString();
+    string searchValue = string.IsNullOrEmpty(Model.SuggestTerm) ? Model.SearchKeyword : Model.SuggestTerm;
+    UserViewModel userModel = Helper.GetUserDetails();
+    int? portalId = Helper.GetCurrentPortalId();
+    int? userId = userModel?.UserId;
+    int? profileId = userModel?.Profiles?.FirstOrDefault()?.ProfileId;
+    long? resultCount = Model?.TotalProductCount;
+
+    bool addDataToDB = !string.IsNullOrEmpty(searchTerm) ? true : false;
+    if (Request.QueryString != null && (Request.QueryString["fromSearch"] != null || Request.QueryString["sort"] != null || Request.QueryString["pagenumber"] != null || Request.QueryString["pageSize"] != null))
+    {
+        addDataToDB = false;
+    }
+    //bool IsMobile = false;
+    var catModel = ViewContext.Controller.ViewData.Model as Znode.Engine.WebStore.ViewModels.CategoryViewModel;
+    var fromSearch = ViewContext.Controller.ViewData.Model is Znode.Engine.WebStore.ViewModels.SearchRequestViewModel;
+    bool hasFreeFreightItems = false;
+    bool hasCAWarehouseItems = false;
+    if (Model?.Products != null)
+    {
+        hasFreeFreightItems = Model.Products.Any(x => x.Attributes.FirstOrDefault(o => o.AttributeCode == "FreeFreight")?.AttributeValues == "true");
+        hasCAWarehouseItems = Model.Products.Any(x => x.Attributes.FirstOrDefault(o => o.AttributeCode == "CaliforniaWarehouse")?.AttributeValues == "true");
+    }
+    ViewDataDictionary ViewDic = new ViewDataDictionary { { "hasFreeFreightItems", hasFreeFreightItems }, { "hasCAWarehouseItems", hasCAWarehouseItems } };
+    var IsChillpackrCategory = catModel?.Attributes.Value("IsChillpackrCategory")!=null && catModel?.Attributes.Value("IsChillpackrCategory")=="true";
+    //Commented and disable Chillpackr implementation
+    //IsChillpackrCategory = false;
+}
+
+
+@if (Model?.Products?.Count > 0)
+{
+    var categoryName = Model.Products.First()?.CategoryName;
+
+    <!--Table for PLP List-->
+<div class="col-12 p-0 b2b-product-grid">
+    <div class="d-none">
+        <div class="d-flex flex-wrap align-items-center">
+            @Html.Partial("../Search/_PagingSearching", Model)
+        </div>
+    </div>
+    <div class="b2b-facets-btn d-lg-none quotebutton">
+        <button data-target="#facets" class="OpenNav nav-link btn-block btn btn-secondary m-md-auto">Sort & Filter</button>
+    </div>
+    <div id="facetFilters" class="col-12 b2b-filtered-list p-0"></div>
+    <div class="col-12 product-view p-0 my-3">
+
+        @if (fromSearch || IsChillpackrCategory)
+        {
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 margin-top-30 margin-bottom-30">
+                        <ul id="view-option-productgrid" infinnity-loading="@Helper.InfinityLoading" class="product-grid-ul grid-view">
+                            @{
+                                if (!Equals(Model, null))
+                                {
+                                    foreach (var p in Model.Products)
+                                    {
+                                        <li class="b2b-products">
+                                            <article class="product-item">
+                                                @Html.Partial("../Product/_ProductTile", p)
+                                            </article>
+                                        </li>
+                                    }
+                                }
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
+
+        }
+        else
+        {
+            <div class="desktop-view-plp">
+                <!--Table View PLP-->
+                <div class="table-responsive">
+                    <table id="view-option-productgrid" class="table table-bordered" infinnity-loading="@Helper.InfinityLoading">
+                        <thead class="head-background">
+
+                            <tr>
+                                <th class="th-image width-1">Image</th>
+                                <th class="width-2">SKU</th>
+                                @{
+                                    for (int i = 1; i <= 3; i++)
+                                    {
+                                        string colName = catModel.Attributes?.Value("MatrixColumn" + i);
+                                        if (colName != null)
+                                        {
+                                            if (Model.Products != null && Model.Products.Count() > 0)
+                                            {
+                                                var att = Model.Products.First().Attributes.FirstOrDefault(x => x.AttributeCode == colName);
+                                                if (att != null)
+                                                {
+                                                    colName = att.AttributeName;
+                                                }
+                                            }
+                                            <th class="width-3">@colName</th>
+                                        }
+                                    }
+                                    var ShipUnitLabel = catModel.Attributes?.Value("ShipUnitLabel");
+                                    var ShipUnit = catModel.Attributes.Value("ShipUnit");
+                                    var PriceUnitLabel = catModel.Attributes?.Value("PriceUnitLabel");
+
+                                }
+                                <th class="width-4">@ShipUnitLabel/@ShipUnit</th>
+                                <th class="insider-table width-5">
+                                    <table class="table-responsive">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="4">Ships From</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="insider-tbody-1">
+                                                <td>
+                                                    <span><label>@Html.RenderMessage("box")</label></span>
+                                                </td>
+                                                <td>
+                                                    <span><label>@Html.RenderMessage("JIT")</label></span>
+                                                </td>
+                                                @if (hasCAWarehouseItems)
+                                                {
+                                                    <td>
+                                                        <span><label>@Html.RenderMessage("CALIFORNIA")</label></span>
+                                                    </td>
+                                                }
+                                                @if (hasFreeFreightItems)
+                                                {
+                                                    <td>
+                                                        <span><label>Free Shipping</label></span>
+                                                    </td>
+                                                }
+
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </th>
+                                <th class="insider-table width-6">
+                                    <table class="table-responsive">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="4">Price/@PriceUnitLabel</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="insider-tbody">
+                                                @{
+                                                    var tpHeaders = Model?.Products?.FirstOrDefault(x => x.TierPriceList != null)?.TierPriceList?.Select(x => x.Quantity.ToString()).ToList();
+                                                    foreach (string header in tpHeaders)
+                                                    {
+                                                        <td><span>@header</span></td>
+                                                    }
+                                                }
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </th>
+                                <th class="width-7">Add To Cart</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                if (!Equals(Model, null))
+                                {
+                                    foreach (var p in Model.Products)
+                                    {
+                                        @Html.Partial("../Product/_ProductTileTable", p, ViewDic)
+                                    }
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        }
+
+
+        <div class="mobile-view-plp">
+            <!--Grid View PLP-->
+            <ul id="view-option-productgrid" infinnity-loading="@Helper.InfinityLoading" class="product-grid-ul grid-view">
+                @{
+                    if (!Equals(Model, null))
+                    {
+                        foreach (var p in Model.Products)
+                        {
+                            <li class="b2b-products">
+                                <article class="product-item">
+                                    @Html.Partial("../Product/_ProductTile", p)
+                                </article>
+                            </li>
+                        }
+                    }
+                }
+            </ul>
+        </div>
+
+        <div id="loading" class="loader" style="display:none;"></div>
+    </div>
+    <div class="b2b-filters d-flex">
+        <div class="d-flex flex-wrap justify-content-center align-items-center">
+            @Html.Partial("../Search/_PagingSearchingBottom", Model)
+        </div>
+    </div>
+</div>
+}
+else
+{
+    if (!string.IsNullOrEmpty(Model.SearchTextName) && Model.SearchTextName != "Search")
+    {
+        if (((List<FacetViewModel>)Session["FacetFiltersPLP"]).Count > 0)
+        {
+            <div class="col-12 p-0 b2b-product-grid">
+                <div id="facetFilters" class="col-12 b2b-filtered-list p-0"></div>
+                <h1 style="margin-left: 40%;margin-top: 2%;">No Result Found</h1>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12 col-md-8 p-0">
+            @Html.RenderBlock(WebStore_Resources.NoSearchResultsFound?.Replace("{0}", searchTerm))
+        </div>
+    }
+}
+<input type="hidden" id="hdnLocaleId" value="@Helper.GetLocaleId()" data-test-selector="txtLocaleId">
+<input type="hidden" id="hdnProfileId" value="@Helper.GetProfileId()" data-test-selector="txtProfileId">
+<input type="hidden" id="hdnAccountId" value="@Helper.GetUserAccountId()" data-test-selector="txtAccountId">
+<input type="hidden" id="hdnCatalogId" value="@Helper.GetUserProfileCatalogId()" data-test-selector="txtCatalogId">
+
+@*@Html.Hidden("IsMobileCase", @IsMobile)*@
+
+<script>
+    $(document).ready(function () {
+        Search.prototype.SaveSearchKeywords();
+        var async = '@Helper.IsAsyncPrice';
+        if (async == 'True') {
+            Product.prototype.GetPriceAsync();
+        }
+        $("#searchTextBox").val(`@Html.RenderBlock(searchValue)`);
+
+        if ('@addDataToDB'=='True') {
+            var model = {
+                "UserId": '@userId',
+                "SearchProfileId": '@Model.SearchProfileId',
+                "PortalId": '@portalId',
+                "UserProfileId": '@profileId',
+                "SearchKeyword": '@HttpUtility.JavaScriptStringEncode(Model.SearchKeyword,false)',
+                "TransformationKeyword": '@Model.SuggestTerm',
+                "ResultCount": '@resultCount'
+            };
+            Search.prototype.SaveSearchReportData(model)
+        }
+
+    })
+</script>
+@Html.Partial("~/Views/Shared/Enhanced Ecommerce/_PLPTracking.cshtml", Model.GetProductImpressionsData())
+@Html.Partial("../Schema/_ProductListSchema", Model)

@@ -1,0 +1,44 @@
+﻿@using Znode.Engine.WebStore.ViewModels
+@using Znode.Libraries.ECommerce.Utilities
+@model ProductPriceViewModel
+@{
+    bool isShowPriceAndInventoryToLoggedInCustomersOnly = GlobalAttributeHelper.IsShowPriceAndInventoryToLoggedInUsersOnly();
+}
+
+@if ((!isShowPriceAndInventoryToLoggedInCustomersOnly || Request.IsAuthenticated) && HelperUtility.IsNotNull(Model) && Model.TierPriceList?.Count > 0)
+{
+<div class="col-12 p-0 my-4 b2b-price-list">
+    <table class="table table-volume-discount table-responsive table-striped">
+        <thead>
+            <tr>
+                <th colspan="2" class="colspan-2">Volume Discounts</th>
+            </tr>
+            <tr>
+                <th>Quantity</th>
+                <th>Price</th>
+                <!--<th>You Save</th>-->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.TierPriceList)
+            {
+                <tr>
+                    <td data-test-selector="colQuantity">Buy @Convert.ToDouble(item.Quantity) or more</td>
+
+                    <td><span class="@Model.ObsoleteClass" data-test-selector="spnTierPrice">@Helper.FormatPriceWithCurrency(item.Price, Model?.CultureCode)</span> </td>
+                    @* Calculates the % savings on tier pricing *@
+                    <!--
+                    <td>
+                        @if (Model.ProductPrice != null)
+                        {
+                            <span data-test-selector="spnTierPercentSave">@Math.Ceiling((decimal)(100 - ((100 / Model.ProductPrice) * item.Price))) %</span>
+                        }
+                    </td>
+                    -->
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+}
+

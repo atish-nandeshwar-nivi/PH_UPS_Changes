@@ -1,0 +1,13 @@
+﻿@using Znode.Engine.WebStore.ViewModels
+@model CategoryViewModel
+@{ 
+    var domainurl = HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority);
+}
+<li>
+    <article class="mb-4">
+        <a href="@domainurl@Url.GetCategoryUrl(Model.SEODetails.SEOUrl, null, Model.CategoryId)">
+            <img id="@Model.CategoryId" src="@Model.ImageSmallPath" alt="@WebUtility.HtmlDecode(Model.CategoryName) Image" class="img-fluid" data-src="@Model.ImageSmallPath" />
+                <span>@WebUtility.HtmlDecode(Model.CategoryName)</span>
+        </a>
+    </article>
+</li>

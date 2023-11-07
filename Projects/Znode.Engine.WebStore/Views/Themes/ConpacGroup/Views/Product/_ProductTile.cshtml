@@ -1,0 +1,81 @@
+﻿@using Znode.Engine.WebStore.ViewModels
+@using Znode.Libraries.ECommerce.Utilities
+@model ProductViewModel
+@using Znode.Engine.WebStore.Agents
+@{
+    string callForPricingMessage = Html.RenderMessage(WebStoreConstants.ProductCallForPricing)?.ToString();
+    bool CallForPricing = Convert.ToBoolean(Model.Attributes?.Value(ZnodeConstant.CallForPricing));
+    ProductPromotionViewModel promotionCallForPricing = Model?.Promotions?.FirstOrDefault(x => x.PromotionType == ZnodeConstant.PromotionCallForPricing);
+    if (HelperUtility.IsNotNull(promotionCallForPricing))
+    {
+        CallForPricing = true;
+        callForPricingMessage = string.IsNullOrEmpty(promotionCallForPricing.PromotionMessage) ? callForPricingMessage : promotionCallForPricing.PromotionMessage;
+    }
+    var _portal = PortalAgent.CurrentPortal;
+    string _fileLocation = $"/Views/Themes/{_portal.Theme}";
+    string disable = CallForPricing || !Model.ShowAddToCart ? "disabled" : "";
+    string productType = Model?.Attributes?.SelectAttributeList(ZnodeConstant.ProductType)?.FirstOrDefault()?.Code;
+    string UOM = Attributes.ValueFromSelectValue(Model?.Attributes, "UOM");
+    string ratingText = Model.Rating > 0 ? string.Format(WebStore_Resources.TextRating, Math.Round(Model.Rating, 1), Model.TotalReviews) : string.Empty;
+    var domainurl = HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority);
+    bool isShowPriceAndInventoryToLoggedInCustomersOnly = GlobalAttributeHelper.IsShowPriceAndInventoryToLoggedInUsersOnly();
+    bool showDefaultAndAllLocationsInventory = GlobalAttributeHelper.IsShowAllLocationsInventory();
+    bool isObsolete = Convert.ToBoolean(Model.Attributes?.Value(ZnodeConstant.IsObsolete));
+    string obsoleteClass = isObsolete ? "cut-price" : "";
+    string productUrl = domainurl + Url.GetProductUrl(Model?.SEOUrl, Model?.PublishProductId.ToString());
+    string productOnClickEvent = Helper.IsEnhancedEcommerceTrackingEnabled() ? "SendEcommerceData(this,'" + Model.SKU + "')" : "";
+    var IsChillpackrProduct = Model.Attributes.Value("IsChillpackrProduct") != null && Model.Attributes.Value("IsChillpackrProduct") == "true";
+    //Commented and disable Chillpackr implementation
+    //IsChillpackrProduct = false;
+}
+
+<div class="view-item justify-content-center justify-content-md-start">
+    <div class="product-img">
+        <a data-test-selector="linkProductURL" href="@domainurl@Url.GetProductUrl(Model?.SEOUrl, Model?.PublishProductId.ToString())" onclick=@productOnClickEvent class="w-100">
+            @if (Convert.ToBoolean(Model.Attributes?.Value("NewProduct")))
+            {
+                <img src="@_fileLocation/Images/new-product-tag.png" alt="New Product" class="img-fluid new-product-tag hvr-pulse" />
+            }
+            <div class="row no-gutters align-items-center">
+                @{
+                    string imageSrc = string.IsNullOrEmpty(Model.ImageSmallPath) ? "/no-image.png" : Model.ImageSmallPath;
+                }
+                <div class="image col-12 col-md-12 p-0 text-center">
+                    <img class="img-fluid b-lazy" src="@_fileLocation/Images/throbber.svg" data-src="@imageSrc" id="@Model.PublishProductId" alt="@Html.RenderBlock(Model.Name)" data-test-selector="imgProduct" />
+                </div>
+                <div class="title col-8 col-md-12 px-3 px-md-0" title="@Html.RenderBlock(Model.Name)" data-test-selector="divProductName">@Html.RenderBlock(Model.Name)</div>
+            </div>
+        </a>
+    </div>
+    <div class="product-details">
+        <a href="@domainurl@Url.GetProductUrl(Model?.SEOUrl, Model?.PublishProductId.ToString())" onclick=@productOnClickEvent>
+            <div class="title title-list" title="@Html.RenderBlock(Model.Name)">@Html.RenderBlock(Model.Name)</div>
+        </a>
+        <div class="product-sku" data-test-selector="divProductSku">
+            SKU: @Model.SKU
+        </div>
+        @if (IsChillpackrProduct)
+        {
+            <div class="product_highlight">
+                @if (HelperUtility.IsNotNull(Model?.HighlightLists) && Model.HighlightLists.Any())
+                {
+                    @Html.Partial("_PLPProductHighLights", Model.HighlightLists)
+                }
+            </div>
+        }
+        @*<button onclick="Product.prototype.GetProductDetails(this)" class="btn btn-quick-view" data-review-state-id="" data-product-is-active="" data-value="@Model.PublishProductId" data-isquickview="true" data-toggle="modal" data-target=".quick-view-popup" data-test-selector="btnQuickView">@WebStore_Resources.ButtonQuickView</button>*@
+
+        <div class="d-flex justify-content-between d-none">
+
+            <div class="b2b-view-more-details">
+                <a href="@domainurl@Url.GetProductUrl(Model?.SEOUrl, Model?.PublishProductId.ToString())" onclick=@productOnClickEvent class="button-view-more"><span class="label-view-more">View more details</span></a>
+            </div>
+            <div class="b2b-compare-product">
+                @if (Model.EnableProductCompare)
+                {
+                    <a href="JavaScript:void(0);" class="button-compare" onclick="return Category.prototype.AddToCompare(@Model.PublishProductId,@Model.CategoryId)" title="@WebStore_Resources.LabelCompareLink" data-test-selector="linkCompare"><span class="icon-compare pr-1"></span><span class="label-compare">@WebStore_Resources.LabelCompareLink</span></a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

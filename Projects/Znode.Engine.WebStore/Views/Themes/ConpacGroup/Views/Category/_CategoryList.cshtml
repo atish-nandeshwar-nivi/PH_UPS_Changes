@@ -1,0 +1,14 @@
+﻿@using Znode.Engine.WebStore.ViewModels
+@using Znode.Engine.WebStore.Agents
+@model CategoryViewModel
+@{
+    var domainurl = HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority);
+    var catImage = Model.Attributes.FirstOrDefault(x => x.AttributeCode == "catgoryimagehomepage")?.AttributeValues;
+    var image = string.IsNullOrEmpty(catImage)? Model.ImageMediumPath : PortalAgent.CurrentPortal.MediaServerUrl + catImage;
+}
+<li class="b2b-categories">
+    <a href="@domainurl@Url.GetCategoryUrl(Model.SEODetails?.SEOUrl, null, Model.CategoryId)">
+        <img data-test-selector="imgCategoryImage" id="@Model.CategoryId" src="@image" data-catimage="@catImage" class="img-fluid b-lazy" alt="@WebUtility.HtmlDecode(Model.CategoryName) Image" data-src="@image" />
+        <span data-test-selector="lblCategoryName">@WebUtility.HtmlDecode(Model.CategoryName)</span>
+    </a>
+</li>

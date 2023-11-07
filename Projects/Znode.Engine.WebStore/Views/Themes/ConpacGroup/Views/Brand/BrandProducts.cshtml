@@ -1,0 +1,61 @@
+﻿@using Znode.Engine.WebStore.Agents
+@model Znode.Engine.WebStore.ViewModels.BrandViewModel
+@{
+    Dictionary<string, object> searchProperties = new Dictionary<string, object>();
+
+    searchProperties.Add(WebStoreConstants.PageSize, !Equals(Request.QueryString[WebStoreConstants.PageSize], null) ? Convert.ToInt32(Request.QueryString[WebStoreConstants.PageSize]) : 16);
+    searchProperties.Add(WebStoreConstants.PageNumber, !Equals(Request.QueryString[WebStoreConstants.PageNumber], null) ? Convert.ToInt32(Request.QueryString[WebStoreConstants.PageNumber]) : 1);
+    searchProperties.Add(WebStoreConstants.Sort, !Equals(Request.QueryString[WebStoreConstants.Sort], null) ? Convert.ToInt32(Request.QueryString[WebStoreConstants.Sort]) : 0);
+    searchProperties.Add(WebStoreConstants.Brand, Model?.BrandName);
+    int portalId = PortalAgent.CurrentPortal.PortalId;
+}
+
+<div id="layout-category" data-category="@Model.BrandName" data-categoryId="@Model.BrandId" class="col">
+    @Html.Partial("../_LearnMore", Model)
+    <div class="row b2b-breadcrumbs d-none d-md-block">
+        <div class="container">
+            <div class="row">
+                <!-- Breadcrumb -->
+                <div id="breadCrumb" class="col breadcrumb-container">@Html.RenderBlock(Model.BreadCrumbHtml)</div>
+            </div>
+        </div>
+    </div>
+    <div class="row b2b-products-list">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-12">
+                    <h1 class="page-title">@Model.BrandName</h1>
+                    <p class="mb-2">@Html.RenderBlock(@WebUtility.HtmlDecode(Model.Description))</p>
+                </div>
+                <div id="facets" class="col-12 col-lg-3 p-0 side-nav nav-right b2b-side-bar">
+                    <div class="d-lg-none">
+                        <div class="col-12 text-right nav-header">
+                            <a href="JavaScript:void(0);" class="CloseNav p-0 close-icon"></a>
+                            <div class="nav-label"><div class="cut-text"> Sort & Filter</div></div>
+                        </div>
+                    </div>
+                    <z-widget>@Html.WidgetPartial("Facet", "Facet", "125", "Brand", Model.BrandId, searchProperties)</z-widget>
+                    <div class="col-12 p-0 b2b-compare-product-list">
+                        <div id="compareProductList">
+                        </div>
+                    </div>
+                </div>
+                <!--Brand Banner-->
+                <div class="col-12 col-lg-9 b2b-product-list">
+                    <z-widget>@Html.WidgetPartial("ProductGrid", "ProductList", "124", "Brand", Model.BrandId, searchProperties)</z-widget>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="container">
+            <div class="row">
+                <div class="col advertisement-banner mt-4 mt-md-0">
+                    <!--Advertisement Banner Widget-->
+                    <z-widget>@Html.WidgetPartial("OfferBanner", "AdvertisementBanner", "110", ZnodeCMSTypeofMappingEnum.PortalMapping.ToString(), portalId)</z-widget>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,37 @@
+﻿@using Znode.Admin.Custom.ViewModel
+@model List<CustomerUserMessageLogDetailsViewModel>
+<div class="container-fluid wrapper">
+    <div class="row body-wrapper">
+        <div>
+            <div class="col-sm-12 page-container">
+                <div class="table-responsive col-sm-12 nopadding gridcontrol-table dirtyignore">
+                    <table id="tblCustomerUserMessageLogs" class="table">
+                        <thead>
+                            <tr class="grid-header">
+                                <th scope="col">
+                                    UserName
+                                </th>
+                                <th scope="col">
+                                    ErrorMessage
+                                </th>
+                                <th scope="col">
+                                    Date Time
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.UserName</td>
+                                    <td>@item.ErrorMessage</td>
+                                    <td>@item.CreatedDate</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

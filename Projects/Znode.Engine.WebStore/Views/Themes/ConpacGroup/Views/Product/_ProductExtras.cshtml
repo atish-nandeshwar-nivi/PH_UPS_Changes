@@ -1,0 +1,7 @@
+﻿@model Znode.Engine.WebStore.ViewModels.ProductViewModel
+ @{
+     int productId = Model.ConfigurableProductId > 0 ? Model.ConfigurableProductId : Model.PublishProductId;
+}
+<div>
+    <z-widget>@Html.WidgetPartial("LinkProductList", "LinkProducts", "1101", "PortalMapping", productId)</z-widget>
+</div>

@@ -1,0 +1,114 @@
+﻿@using Znode.Engine.Admin.ViewModels;
+@model AnalyticsViewModel
+@{
+    ViewBag.Title = Admin_Resources.LabelReport + " | " + Admin_Resources.LabelAnalytics;
+}
+<div class="col-sm-12 title-container">
+    <h1>@Admin_Resources.TitleAnalyticsOverview</h1>
+</div>
+
+<div class="main-wrapper">
+    <!--Left Panel-->
+    <aside>
+        @Html.Partial("~/Views/Analytics/_asideAnalyticsPanel.cshtml")
+    </aside>
+    <section class="main-container analytics-section">
+        @if (!Equals(Model, null) && !Model.HasError)
+        {
+            <div class="col-sm-12 padding-bottom Ga-heading">
+                <h2 data-test-selector="hdgAnalyticsHeading">@Admin_Resources.TitleAnalyticsDashboardOverview</h2>
+            </div>
+            <!--Main Container-->
+            <div class="row GA-maincontent">
+                <div class="col-sm-6 view-selector">
+                    <div id="view-selector-container"></div>
+                </div>
+                <div class="col-sm-6 active-user">
+                    <div id="active-users-container"></div>
+                </div>
+            </div>
+            <div class="row new-user-rate">
+                <div class="col-sm-6">
+                    <div class="card">
+                        <div class="Chartjs" data-test-selector="divNewUsersChart">
+                            <h3 data-test-selector="hdgAnalyticsNewUsers">@Admin_Resources.TitleAnalyticsNewUsers</h3>
+                            <figure class="Chartjs-figure" id="new-users-container"></figure>
+                            <ol class="Chartjs-legend" id="legend-1-container"></ol>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="card">
+                        <div class="Chartjs" data-test-selector="divBounceRateChart">
+                            <h3 data-test-selector="hdgAnalyticsBounceRate">@Admin_Resources.TitleAnalyticsBounceRate</h3>
+                            <figure class="Chartjs-figure" id="bounce-rate-container"></figure>
+                            <ol class="Chartjs-legend" id="legend-2-container"></ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row keyword-top-browser d-flex">
+                <div class="col-sm-4 float-none">
+                    <div class="card">
+                        <div class="Chartjs" data-test-selector="divKeywordsChart">
+                            <h3 data-test-selector="hdgAnalyticsKeywords">@Admin_Resources.TitleAnalyticsKeywords</h3>
+                            <figure class="Chartjs-figure" id="keywords-container"></figure>
+                            <ol class="Chartjs-legend" id="legend-3-container"></ol>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4 float-none">
+                    <div class="card">
+                        <div class="Chartjs" data-test-selector="divPageViewsChart">
+                            <h3 data-test-selector="hdgAnalyticsPageViews">@Admin_Resources.TitleAnalyticsPageViews</h3>
+                            <figure class="Chartjs-figure" id="page-views-container"></figure>
+                            <ol class="Chartjs-legend" id="legend-4-container"></ol>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4 float-none">
+                    <div class="card">
+                        <div class="Chartjs" data-test-selector="divTopBrowsersChart">
+                            <h3 data-test-selector="hdgAnalyticsTopBrowsers">@Admin_Resources.TitleAnalyticsTopBrowsers</h3>
+                            <figure class="Chartjs-figure" id="top-browsers-container"></figure>
+                            <ol class="Chartjs-legend" id="legend-5-container"></ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @Html.HiddenFor(m => m.AnalyticsAccessToken)
+        }
+        else
+        {
+            <div class="col-xs-12">
+                <h2>@Model.ErrorMessage </h2>
+            </div>
+        }
+    </section>
+</div>
+
+@if(!Model.HasError)
+{
+    <script>
+        (function (w, d, s, g, js, fs) {
+            g = w.gapi || (w.gapi = {}); g.analytics = { q: [], ready: function (f) { this.q.push(f); } };
+            js = d.createElement(s); fs = d.getElementsByTagName(s)[0];
+            js.src = 'https://apis.google.com/js/platform.js';
+            fs.parentNode.insertBefore(js, fs); js.onload = function () { g.load('analytics'); };
+        }(window, document, 'script'));
+    </script>
+
+    <!-- This demo uses the Chart.js graphing library and Moment.js to do dateformatting and manipulation. -->
+    <script src="~/Scripts/Extensions/Chart.min.js"></script>
+    <script src="~/Scripts/Extensions/moment.min.js"></script>
+    <!-- Include the ViewSelector2 component script. -->
+    <script src="~/Scripts/Extensions/view-selector2.js"></script>
+    <!-- Include the DateRangeSelector component script. -->
+    <script src="~/Scripts/Extensions/date-range-selector.js"></script>
+    <!-- Include the ActiveUsers component script. -->
+    <script src="~/Scripts/Extensions/active-users.js"></script>
+    <!-- Include the CSS that styles the charts. -->
+    <link rel="stylesheet" src="~/Scripts/Extensions/chartjs.css">
+
+    <script src="~/Scripts/Extensions/Analytics-min.js"></script>
+}

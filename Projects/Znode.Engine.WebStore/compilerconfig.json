@@ -1,0 +1,24 @@
+﻿[
+  {
+    "outputFile": "Views/Themes/Default/Content/css/site.css",
+    "inputFile": "Views/Themes/Default/Content/sass/site.scss"
+  },
+  {
+    "outputFile": "Views/Themes/B2B/Content/css/site.css",
+    "inputFile": "Views/Themes/B2B/Content/sass/site.scss"
+  },
+  {
+    "outputFile": "Views/Themes/ConpacGroup/Content/css/site.css",
+    "inputFile": "Views/Themes/ConpacGroup/Content/sass/site.scss"
+  },
+ 
+  //For JS
+  {
+    "outputFile": "Views/Themes/Default/Scripts/lib/event.min.js",
+    "inputFile": "Views/Themes/Default/Scripts/lib/event.js"
+  },
+  {
+    "outputFile": "Views/Themes/ConpacGroup/Scripts/lib/event.min.js",
+    "inputFile": "Views/Themes/ConpacGroup/Scripts/lib/event.js"
+  }
+]

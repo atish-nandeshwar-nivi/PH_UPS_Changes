@@ -1,0 +1,151 @@
+﻿@model Znode.Engine.WebStore.ViewModels.ProductViewModel
+@using Znode.Engine.WebStore.Agents
+@{
+    var _portal = PortalAgent.CurrentPortal;
+    string _fileLocation = $"/Views/Themes/{_portal.Theme}";
+    bool isLiteVersion = false;
+    if (ViewBag.IsLite != null) { isLiteVersion = (bool)ViewBag.IsLite; }
+    string mediaPath = _portal.MediaServerUrl;
+}
+
+<div class="col-12 p-0 image-view" id="ProductImage">
+    @if (Convert.ToBoolean(Model.Attributes?.Value("NewProduct")))
+    {
+        <img src="@_fileLocation/Images/new-product-tag.png" alt="New Product" class="img-responsive new-product-tag" />
+    }
+    <div class="easyzoom easyzoom-with-thumbnails">
+        <a href="@Model.ImageLargePath">
+            <img src="@Model.ImageLargePath" class="img-fluid" data-test-selector="imgLargePath" alt="@Html.RenderBlock(Model.Name)" />
+        </a>
+    </div>
+    <!--Video Code show here-->
+    @if (!string.IsNullOrEmpty(Model.Attributes?.Value("VideoURL")))
+    {
+        <div class="VideoURL video-frame" data-role="simplevideourl">
+            <video class="YouTubeFrame" controls="" name="media">
+                <source src="@(mediaPath+Model.Attributes.Value("VideoURL"))" type="video/mp4" alt="Video" title="Video">
+            </video>
+        </div>
+    }
+
+    <div class="col-12 p-0 product-altimages">
+        <div id="alt-images" class="owl-carousel alternate-img simpleLens-thumbnails-container Product_Altimages">
+            @if (isLiteVersion)
+            {
+                @Ajax.Partial("AlternateImages", "AlternateProductImagesZoomEffect", "Product", new { id = ViewBag.ProductId, expands = "ProductImage", seo = ViewBag.Seo, isquickview = ViewBag.IsQuickView, publishstate = PortalAgent.CurrentPortal.PublishState })
+            }
+            else
+            {
+                if (Model.AlternateImages?.Count > 0)
+                {
+                    <div class="item showimageclick">
+                        <a href="@Model.ImageLargePath" data-standard="@Model.ImageLargePath">
+                            <img src="@Model.ImageMediumPath" data-test-selector="imgMediumPath" alt="@Html.RenderBlock(Model.Name)" />
+                        </a>
+                    </div>
+
+                    foreach (var image in Model.AlternateImages)
+                    {
+                        <div class="item showimageclick">
+                            <a href="@image.OriginalImagePath" data-standard="@image.OriginalImagePath">
+                                <img src="@image.ImageThumbNailPath" data-test-selector="imgThumbNailPath" alt="@Html.RenderBlock(Model.Name)" />
+                            </a>
+                        </div>
+                    }
+                    if (!string.IsNullOrEmpty(Model.Attributes?.Value("VideoURL")))
+                    {
+                        <div class="item showvideoclick" data-role="simplevideourl">
+                            <a href="javascript:void(0)" onclick="('VideoURL', 'inline');" title="Play Video">
+                                <img src="~/Views/Themes/ConpacGroup/Images/playicon.svg" class="img-fluid b-lazy b-loaded" alt="" />
+                            </a>
+                        </div>
+                    }
+
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<script async>
+    $(document).ready(function () {
+        var wishlistStatus = localStorage.getItem("Status")
+        //get it if Status key found
+        if (!(wishlistStatus == null) && !(wishlistStatus == "undefined")) {
+            ZnodeNotification.prototype.DisplayNotificationMessagesHelper(wishlistStatus ? "Product added to wishlist." : "Product could not be added to wishlist.", wishlistStatus ? "success" : "error", true, fadeOutTime);
+            localStorage.clear();
+        }
+    });
+
+    $(function () {
+        // Instantiate EasyZoom instances
+        var $easyzoom = $('.easyzoom').easyZoom();
+        // Setup thumbnails example
+        var api1 = $easyzoom.filter('.easyzoom-with-thumbnails').data('easyZoom');
+
+        $(".Product_Altimages .item").on('click', 'a', function (e) {
+            var $this = $(this);
+            e.preventDefault();
+            // Use EasyZoom's `swap` method
+            api1.swap($this.data('standard'), $this.attr('href'));
+        });
+
+        $(".Product_Altimages").owlCarousel({
+            autoPlay: false,
+            navigation: true,
+            items: 4,
+            touchDrag: false,
+            mouseDrag: false,
+            itemsCustom: [
+                [0, 1],
+                [320, 4],
+                [480, 4],
+                [600, 4],
+                [768, 4],
+                [992, 4],
+                [1200, 6]
+            ],
+            navigationText: [
+                "<span class='left-icon'></span>",
+                "<span class='right-icon'></span>"
+            ]
+        });
+    });
+</script>
+
+<!--Life style and 360 degree show code here-->
+<script language="JavaScript" async>
+    $(function () {
+        $(".video-frame").hide();
+        $(".showimageclick").click(showProductImage);
+        $(".showvideoclick").click(showProductVideo);
+    });
+
+    function showProductImage() {
+        playVideo();
+        $(".easyzoom").show();
+        var link = $(this).find('a')[0];
+        $("img[data-role='image-video']").attr('src', $(link).data('standard'));
+        $(".showimageclick,.showvideoclick").removeClass("active");
+        $(this).addClass("active");
+    }
+
+    function showProductVideo() {
+        $(".easyzoom").hide();
+        var role = $(this).data("role");
+        playVideo(role);
+        $(".showimageclick,.showvideoclick").removeClass("active");
+        $(this).addClass("active");
+    }
+    
+    function playVideo(role) {
+        $(".video-frame").hide();
+        $("div.video-frame video").each(function (i, em) {
+            if ($(em).parent().data("role") == role) {
+                em.play(); $(em).parent().show();
+            } else {
+                em.pause(); em.currentTime = 0;
+            }
+        });
+    }
+</script>

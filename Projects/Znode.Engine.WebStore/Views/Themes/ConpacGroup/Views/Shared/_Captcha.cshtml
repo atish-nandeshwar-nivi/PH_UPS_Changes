@@ -1,0 +1,17 @@
+﻿@using CaptchaMvc.HtmlHelpers
+<div class="col-xs-12 nopadding captcha-panel">
+    <label for="CaptchaInputText" class="d-none">captcha</label>
+    @Html.Captcha("Refresh", "Captcha Code", 5, WebStore_Resources.RequiredCaptchaCode, true)
+</div>
+<script>
+    $("#CaptchaDeText").next().next("a").attr("href", "")
+    $("#CaptchaDeText").next().next("a").attr("onclick", "" + $("#CaptchaDeText").next().next("a").attr("onclick") + ";return false;" + "")
+    $('#div-captcha .captcha-panel a').attr('title', 'Refresh');
+    document.getElementById("CaptchaInputText").maxLength = "5";
+</script>
+<script>
+    $(document).ready(function () {
+        $('#CaptchaImage').attr('alt', 'Captcha');
+        $('#CaptchaImage').attr('title', 'Captcha');
+    })
+</script>

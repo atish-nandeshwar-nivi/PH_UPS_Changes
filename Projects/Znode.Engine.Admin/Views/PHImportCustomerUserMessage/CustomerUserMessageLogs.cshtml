@@ -1,0 +1,102 @@
+﻿@using Znode.Admin.Custom.ViewModel
+@model List<CustomerUserMessageLogViewModel>
+@{
+    ViewBag.Title = "CustomerUserMessageLogs";
+}
+
+<div class="container-fluid wrapper">
+    <div class="col-sm-12 nopadding notification-msg" id="body">
+        <div class="messageBoxContainer" id="messageBoxContainerId" data-message=""></div>
+    </div>
+    <div class="row body-wrapper">
+
+        <div id="ZnodeImportProcessLog">
+            <!--Main Container-->
+            <div id="share-btn" style="display:none"></div>
+            <div class="col-sm-12 title-container">
+                <h1>Customer User Message Logs</h1>
+                <div class="pull-right btn-container">
+                    <a class="btn-text-icon" data-test-selector="linkCancel" href="/PHImportCustomerUserMessage/Index"><em class="z-back"></em>Back</a>
+                </div>
+            </div>
+            <div class="col-sm-12 page-container">
+                <div class="table-responsive col-sm-12 nopadding gridcontrol-table dirtyignore">
+                    <table id="tblCustomerUserMessageLogs" class="table">
+                        <thead>
+                            <tr class="grid-header">
+                                <th scope="col">
+                                    Status
+                                </th>
+                                <th scope="col">
+                                    Total Records
+                                </th>
+                                <th scope="col">
+                                    Success Record
+                                </th>
+                                <th scope="col">
+                                    Fail Record
+                                </th>
+                                <th scope="col">
+                                    Date Time
+                                </th>
+                                <th scope="col" class="grid-action">
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                            <tr>
+                                <td>@item.Status</td>
+                                <td>@item.TotalRecords</td>
+                                <td>@item.SuceessRecords</td>
+                                <td>@item.FailRecords</td>
+                                <td>@item.CreatedDate</td>
+                                @if (item.Status == "Fail")
+                                {
+                                    <td class="grid-action"><div><button class="btn-text btn-text-secondary" onclick="getCustomerUserMessageLogDetails(@item.CustomerUserMessageLogId)">Details</button></div></td>
+                                }
+                                else
+                                {
+
+                                }
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*Modal Pop Up*@
+<div class="modal fade" id="popupCustomerUserMessageLogDetails">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close"
+                        data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Customer User Message Log Details</h4>
+            </div>
+            <div id="modalBodyCustomerUserMessageLogDetails" class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" data-dismiss="modal">Close</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+<script>
+    function getCustomerUserMessageLogDetails(id) {
+        
+        $mymodal = $("#popupCustomerUserMessageLogDetails");
+        $.get("/PHImportCustomerUserMessage/CustomerUserMessageLogDetails/" + id, function (data, status) {
+            $mymodal.find("div.modal-body").html(data);
+        });
+        $mymodal.modal("show");
+    }
+</script>

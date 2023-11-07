@@ -1,0 +1,165 @@
+﻿@using Znode.Engine.WebStore.Agents
+@using Znode.Engine.WebStore.ViewModels
+@using System.Configuration;
+@model CategoryHeaderListViewModel
+@{
+    var domainurl = HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority);
+    var chillpakrCatId = Model.Categories.FirstOrDefault(x => x.CategoryCode.Contains("chillpa"))?.CategoryId;
+    string apiURL = Convert.ToString(ConfigurationManager.AppSettings["ZnodeApiRootUri"]);
+    string BaseImagePath = Convert.ToString(ConfigurationManager.AppSettings["CategoryImagePath"]);
+}
+<div class="row">
+    <div class="mega-menu col-12 p-0" data-test-selector="divMegaMenu">
+        <div id="megaNav" class="sidenav" data-test-selector="divMegaNav">
+            <div id="catNav" class="catNav">
+                <div class="d-flex justify-content-between d-lg-none header">
+                    <label class="mb-0">
+                        Navigation
+                    </label>
+                    <label class="mb-0" onclick="closeCat()">
+                        <i class="close-icon"></i>
+                    </label>
+                </div>
+                <ul>
+                    <li class="d-flex justify-content-between align-items-baseline" onclick="openNav('leftNav-cat')">
+                        <a href="JavaScript:void(0);">All Products</a>
+                        <i class="ml-auto right-icon "></i>
+                    </li>
+                    <li>
+                        @if (!(ViewContext.RouteData.Values["controller"].ToString() == "User"))
+                        {
+                            <a href="/product/quickorderpad">@WebStore_Resources.HeaderQuickOrder</a>
+                        }
+                    </li>
+                    <li>
+                        <z-widget>@Html.WidgetPartial("LinkPanel", "Mobile Navigation", "22530", ZnodeCMSTypeofMappingEnum.PortalMapping.ToString(), PortalAgent.CurrentPortal.PortalId)</z-widget>
+                    </li>
+                </ul>
+            </div>
+            <div class="leftnav" id="leftnav" data-test-selector="divLeftNav">
+                <div id="leftNav-cat">
+                    <div class="d-flex justify-content-between d-lg-none header">
+                        <label class="mb-0">
+                            Category
+                        </label>
+                        <label class="mb-0" onclick="closeNav()">
+                            <i class="left-icon"></i> Back
+                        </label>
+                    </div>
+                    <div class="pt-4 pt-lg-0 scroll-list">
+                        @foreach (var category in Model.Categories)
+                        {
+                            string categoryName = category.CategoryName?.Replace(" ", "").Replace("&", "");
+                            bool isPresent = category.SubCategoryItems?.Count > 0 ? Helper.IsPresent(category) : false;
+                            string AttributeValues = category.Attributes?.FirstOrDefault(x => string.Equals(x.AttributeCode, WebStoreConstants.HideCategoryOnMenu, StringComparison.InvariantCultureIgnoreCase))?.AttributeValues;
+                            bool isHideCategoryOnMenu = Znode.Libraries.ECommerce.Utilities.HelperUtility.IsNull(AttributeValues) ? false : Helper.IsBoolen(AttributeValues);
+
+                            if (!isHideCategoryOnMenu)
+                            {
+                                <div class="d-none d-lg-flex justify-content-between align-items-baseline col-icon">
+                                    <a href="@Url.GetCategoryUrl(category.SEOPageName, null, category.CategoryId)" class="tablinks" onmouseover="openRightNav(event, '@categoryName', '@isPresent')" data-test-selector="linkParentPage_@categoryName">
+                                        @Html.RenderBlock(WebUtility.HtmlDecode(category.CategoryName))
+                                    </a>
+                                    @if (isPresent)
+                                    {
+                                        <i class="ml-auto right-icon " onclick="openRightNav(event, '@categoryName', '@isPresent')"></i>
+                                    }
+                                </div>
+
+                                <div class="d-flex d-lg-none justify-content-between align-items-baseline col-icon">
+                                    <a href="@Url.GetCategoryUrl(category.SEOPageName, null, category.CategoryId)" class="tablinks" data-test-selector="linkParentPage_@categoryName">
+                                        @Html.RenderBlock(WebUtility.HtmlDecode(category.CategoryName))
+                                    </a>
+                                    @if (isPresent)
+                                    {
+                                        <i class="ml-auto right-icon " onclick="openRightNav(event, '@categoryName', '@isPresent')"></i>
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="rightnav" id="rightnav" data-test-selector="divRightNav">
+                @foreach (var category in Model.Categories)
+                {
+                    string categoryName = category.CategoryName?.Replace(" ", "").Replace("&", "");
+                    string AttributeValues = category.Attributes?.FirstOrDefault(x => string.Equals(x.AttributeCode, WebStoreConstants.HideCategoryOnMenu, StringComparison.InvariantCultureIgnoreCase))?.AttributeValues;
+                    bool isHideCategoryOnMenu = Znode.Libraries.ECommerce.Utilities.HelperUtility.IsNull(AttributeValues) ? false : Convert.ToBoolean(AttributeValues);
+                    var bannerImage1 = apiURL + BaseImagePath + category.Attributes.FirstOrDefault(x => x.AttributeCode == "CategoryPromoImage1")?.AttributeValues;
+                    var bannerImage2 = apiURL + BaseImagePath + category.Attributes.FirstOrDefault(x => x.AttributeCode == "CategoryPromoImage2")?.AttributeValues;
+
+                    if (!isHideCategoryOnMenu)
+                    {
+                        <div id="@categoryName" class="tabcontent" data-test-selector="div_@categoryName">
+                            <div class="d-flex justify-content-between d-lg-none header">
+                                <label class="mb-0">
+                                    @Html.RenderBlock(WebUtility.HtmlDecode(category.CategoryName))
+                                </label>
+                                <label class="mb-0" onclick="closeRightnav()">
+                                    <i class="left-icon"></i> Back
+                                </label>
+                            </div>
+                            <div class="row py-4 px-5 scroll-list">
+                                <div class="col-12 col-lg-9">
+                                    <ul class="nav-col-5">
+                                        @foreach (var subCategory in category.SubCategoryItems)
+                                        {
+                                            string subCategoryName = subCategory.CategoryName?.Replace(" ", "");
+                                            string subCategoryAttributeValues = subCategory.Attributes?.FirstOrDefault(x => string.Equals(x.AttributeCode, WebStoreConstants.HideCategoryOnMenu, StringComparison.InvariantCultureIgnoreCase))?.AttributeValues;
+                                            bool issubCategoryHideCategoryOnMenu = Znode.Libraries.ECommerce.Utilities.HelperUtility.IsNull(subCategoryAttributeValues) ? false : Convert.ToBoolean(subCategoryAttributeValues);
+
+                                            if (!issubCategoryHideCategoryOnMenu)
+                                            {
+
+                                                <li class="sub-menu" data-test-selector="listContainer_@subCategoryName">
+                                                    <div class="head d-flex justify-content-between align-items-center" data-test-selector="list_@subCategoryName">
+                                                        <a href="@domainurl@Url.GetCategoryUrl(subCategory.SEOPageName, null, subCategory.CategoryId)" data-test-selector="listSubPage_@subCategoryName">@Html.RenderBlock(WebUtility.HtmlDecode(subCategory.CategoryName))</a>
+                                                        @if (!Equals(subCategory.ChildCategoryItems, null) && subCategory.ChildCategoryItems.Count > 0)
+                                                        {
+                                                            <button class="btn d-flex d-lg-none" data-toggle="collapse" data-target="#col-@subCategoryName">
+                                                                <i class="down-icon"></i>
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                    @if (!Equals(subCategory.ChildCategoryItems, null) && subCategory.ChildCategoryItems.Count > 0)
+                                                    {
+                                                        <ul class="list collapse sub-nav-col" id="col-@subCategoryName">
+                                                            @foreach (var childCategory in subCategory.ChildCategoryItems)
+                                                            {
+                                                                string childCategoryName = subCategory.CategoryName?.Replace(" ", "");
+                                                                string childCategoryAttributeValues = childCategory.Attributes?.FirstOrDefault(x => string.Equals(x.AttributeCode, WebStoreConstants.HideCategoryOnMenu, StringComparison.InvariantCultureIgnoreCase))?.AttributeValues;
+                                                                bool ischildCategoryHideCategoryOnMenu = Znode.Libraries.ECommerce.Utilities.HelperUtility.IsNull(childCategoryAttributeValues) ? false : Convert.ToBoolean(childCategoryAttributeValues);
+                                                                if (!ischildCategoryHideCategoryOnMenu)
+                                                                {
+                                                                    <li>
+                                                                        <a href="@domainurl@Url.GetCategoryUrl(childCategory.SEOPageName, null, childCategory.CategoryId)" data-test-selector="listChildPage_@childCategoryName">@Html.RenderBlock(WebUtility.HtmlDecode(childCategory.CategoryName))</a>
+                                                                    </li>
+                                                                }
+                                                            }
+                                                        </ul>
+                                                    }
+                                                </li>
+
+                                            }
+                                        }
+                                    </ul>
+                                </div>
+                                <div class="col-lg-3 d-none d-lg-block text-center nav-cat-img">
+                                    <div>
+                                        <a href="@Url.GetCategoryUrl(category.SEOPageName, null, category.CategoryId)" title="" itemprop="url"><img src="@bannerImage1" class="img-fluid b-lazy"></a>
+                                    </div>
+                                    <div class="pt-4">
+                                        <a href="@Url.GetCategoryUrl(category.SEOPageName, null, category.CategoryId)" title="" itemprop="url"><img src="@bannerImage2" class="img-fluid b-lazy"></a>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>

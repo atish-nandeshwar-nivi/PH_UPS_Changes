@@ -1,0 +1,334 @@
+﻿@using Znode.Engine.Admin.Helpers
+@using Znode.Admin.Custom.ViewModels
+@using Znode.Engine.Admin.ViewModels
+@model CustomPortalDetailViewModel
+
+@{
+    ViewBag.Title = Admin_Resources.TitleStoreAndReps + " | " + Admin_Resources.Multifront;
+    string actionName = ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString();
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ActionModel actionModel = new ActionModel { Action = actionName, Controller = controllerName, FormId = "frmStore", CancelUrl = "/CustomPortal/List" };
+    string portalName = string.IsNullOrEmpty(Model?.StoreName) ? @Admin_Resources.TitleStore : Model?.StoreName;
+    string mainContainer = !actionName.ToLower().Contains("create") ? "main-container" : "col-sm-12 page-container";
+    string mainWrapperClass = !actionName.ToLower().Contains("create") ? "main-wrapper" : "";
+    Model.CopyContentPortalName = Model.CopyContentPortalName ?? Admin_Resources.LabelNone;
+}
+<div class="col-sm-12 title-container">
+    @if (actionName.ToLower().Contains("create"))
+    {
+        <h1>@string.Format(@Admin_Resources.TitleAdd, Admin_Resources.LabelStore)</h1>
+    }
+    else
+    {
+        <h1>@string.Format(@Admin_Resources.TitleManage, Admin_Resources.LabelStore)<i class="z-minus"></i><span>@Model.StoreName</span></h1>
+    }
+
+    <div class="pull-right">
+        @Html.Partial("~/Views/Shared/Controls/_SaveCancelButtons.cshtml", actionModel)
+    </div>
+</div>
+<div class=@mainWrapperClass>
+    <!--Left Panel-->
+    @if (!actionName.ToLower().Contains("create"))
+    {
+        <aside>
+            <div class="slide-container">
+                @Html.Partial("~/views/store/_asidestoremanagepanel.cshtml")
+            </div>
+        </aside>
+    }
+    <!--Main Container-->
+        <section class="@mainContainer">
+            @using (Html.BeginForm(actionName, controllerName, FormMethod.Post, new { @id = "frmStore" }))
+    {
+        <h3 class="section-heading">Store Identity</h3>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.CompanyName, new { @class = "required" })
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.CompanyName)
+                    @Html.ValidationMessageFor(model => model.CompanyName)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.StoreName, new { @class = "required" })
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.StoreName)
+                    @Html.ValidationMessageFor(model => model.StoreName)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.StoreCode, new { @class = "required" })
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.StoreCode, new { @onblur = "ZnodeBase.prototype.ValidateCodeField('[name=StoreCode]','" + Model.StoreCode + "','/Store/IsStoreCodeExists')" })
+                    @Html.ValidationMessageFor(model => model.StoreCode)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.Label(Admin_Resources.TitleCatalog, new { @class = "required" })
+                </div>
+                <div class="control-md">
+                    @Html.DropDownListFor(model => model.PublishCatalogId, Model.CatalogList, new { id = "hdnPublishCatalogId" })
+                    @Html.ValidationMessageFor(model => model.PublishCatalogId)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.Theme, new { @class = "required" })
+                </div>
+                <div class="control-md">
+                    @Html.DropDownListFor(model => model.CMSThemeId, Model.ThemeList, Admin_Resources.LabelSelectTheme, new { @id = "ddlTheme", @OnChange = "Store.prototype.BindCSSBasedOnThemeId();" })
+                    @Html.ValidationMessageFor(model => model.CMSThemeId)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.CSS, new { @class = "required" })
+                </div>
+                <div class="control-md">
+                    @Html.DropDownListFor(model => model.CMSThemeCSSId, Model.CSSList, Admin_Resources.LabelSelectCss, new { @id = "ddlCSS", @OnClick = "Store.prototype.ValidateCSS();" })
+                    @Html.ValidationMessageFor(model => model.CMSThemeCSSId)
+                </div>
+            </div>
+        </div>
+if (Model.PortalId > 0)
+{
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-md control-non">
+                    <a href="/Store/StoreSetting?PortalId=@Model.PortalId" target="_blank" class="btn-text-icon nomargin"><i class="z-display-settings"></i>Display Setting</a>
+                </div>
+            </div>
+        </div>
+}
+
+        <h3 class="section-heading margin-top-25">Security</h3>
+        <div class="form-group">
+            <div class="control-md control-non">
+                <label>
+                    <input id="IsEnableSSL" name="IsEnableSSL" checked="@Model.IsEnableSSL" type="checkbox" value="true">
+                    <span class="lbl padding-8" for="IsEnableSSL">@Admin_Resources.LabelEnableSSL</span>
+                    <input name="IsEnableSSL" type="hidden" value="false">
+                </label>
+            </div>
+        </div>
+        <h3 class="section-heading margin-top-25">Store Contact Information</h3>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.AdministratorEmail, new { @class = "required" })
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.AdministratorEmail)
+                    @Html.ValidationMessageFor(model => model.AdministratorEmail)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.SalesEmail, new { @class = "required" })
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.SalesEmail)
+                    @Html.ValidationMessageFor(model => model.SalesEmail)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.CustomerServiceEmail, new { @class = "required" })
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.CustomerServiceEmail)
+                    @Html.ValidationMessageFor(model => model.CustomerServiceEmail)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.SalesPhoneNumber, new { @class = "required" })
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.SalesPhoneNumber)
+                    @Html.ValidationMessageFor(model => model.SalesPhoneNumber)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.CustomerServicePhoneNumber, new { @class = "required" })
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.CustomerServicePhoneNumber)
+                    @Html.ValidationMessageFor(model => model.CustomerServicePhoneNumber)
+                </div>
+            </div>
+        </div>
+        <h3 class="section-heading margin-top-25">Default Setting</h3>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.ReviewStatus)
+                </div>
+                <div class="control-md">
+                    @Html.DropDownListFor(model => model.ReviewStatusId, Model.CustomerReviewStatusList)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding margin-bottom">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.OrderStatus)
+                </div>
+                <div class="control-md">
+                    @Html.DropDownListFor(model => model.OrderStatusId, Model.OrderStatusList, new { @id = "ddlOrderStatus" })
+                </div>
+                @Html.Partial("_HelpText", @Admin_Resources.HelptextDefaultOrderStatus)
+            </div>
+            <div class="col-sm-12 nopadding">
+                <div class="control-md control-non">
+                    <label>
+                        <input id="IsMannualApproval" name="IsMannualApproval" type="checkbox" onclick="Store.prototype.SetDefaultOrderState(this,'@AdminConstants.PendingApproval')">
+                        <span class="lbl padding-8" for="IsMannualApproval">@Admin_Resources.LabelRequireMannualApproval</span>
+                        <input name="IsMannualApproval" type="hidden" value="false">
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="control-md checkbox-loop control-non">
+                @Html.CheckBoxListFor(model => model.PortalFeatureIds,
+         model => model.AvailableStoreFeatureList,
+         storeFeature => storeFeature.StoreFeatureId,
+         storeFeature => Admin_Resources.ResourceManager.GetString(storeFeature.StoreFeatureName),
+         model => !Equals(model.SelectedStoreFeatureList, null) && model.SelectedStoreFeatureList.Count() > 0 ? model.SelectedStoreFeatureList : new List<StoreFeatureViewModel>()
+         , x => new { @class = "lbl padding-8" })
+            </div>
+        </div>
+
+        <h3 class="section-heading margin-top-25">@PIM_Resources.LabelInventorySetting</h3>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.InStockMsg)
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.InStockMsg)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.OutOfStockMsg)
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.OutOfStockMsg)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.BackOrderMsg)
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.BackOrderMsg)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.CustomeData1)
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.CustomeData1)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.CustomeData2)
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.CustomeData2)
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(model => model.CustomeData3)
+                </div>
+                <div class="control-md">
+                    @Html.TextBoxFor(model => model.CustomeData3)
+                </div>
+            </div>
+        </div>
+if (actionName.ToLower().Contains("create"))
+{
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.Label(Admin_Resources.LabelCopyContent)
+                </div>
+                <div class="control-md">
+                    @Html.DropDownListFor(model => model.CopyContentPortalId, Model.PortalList, Admin_Resources.LabelNone)
+                </div>
+                @Html.Partial("_HelpText", @Admin_Resources.HelptextCopyContentPageMessage)
+            </div>
+        </div>
+}
+
+if (actionName.ToLower().Contains("edit"))
+{
+        @Html.HiddenFor(model => model.PortalId)
+        @Html.HiddenFor(model => model.CustomePortalDetailsId)
+}
+
+        @Html.HiddenFor(model => model.OrderStatusId)
+        @Html.HiddenFor(model => model.CopyContentPortalId)
+        @Html.HiddenFor(model => model.PublishCatalogId)
+}
+        </section>
+</div>
+<script>
+    $(document).ready(function () {
+        Store.prototype.SetRequiresManualApproval('@Model.OrderStatusId', '@AdminConstants.PendingApproval');
+    });
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#viewPortalCatalog').load(function () {
+            var iframe = $('#viewPortalCatalog').contents();
+            iframe.find("img").click(function () {
+                var url = window.location.protocol + "//" + window.location.host + "/MyReports/GetDashboardReport?reportPath=Orders&reportName=Orders&portalIds=" + Dashboard.prototype.GetSelectedPortal() + "&durationId=" + $("#ddlDuration").val();
+                window.open(url, '_blank');
+            });
+        });
+
+    });
+</script>

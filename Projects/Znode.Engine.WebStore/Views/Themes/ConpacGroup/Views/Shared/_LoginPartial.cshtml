@@ -1,0 +1,29 @@
+﻿@if (Request.IsAuthenticated)
+{
+    string firstName = ViewBag.FirstName ?? "";
+    <div class="text-right nav-header" id="userNameDiv">
+        <a class="dropdown-toggle d-block d-lg-none text-white" href="javaScript:void(0);" role="button" id="dropdownMenuButton" onclick="User.prototype.GetAccountMenus();">
+            <span class="profile-icon"></span>
+        </a>
+
+        <a class="dropdown-toggle d-none d-lg-block b2b-username" href="/user/dashboard" role="button" id="dropdownMenuButton" onclick="User.prototype.GetAccountMenus(); closeNav();">
+            @string.Format(WebStore_Resources.TextHelloFirstName, firstName)
+        </a>
+        @*<div id="accountMenusDiv"></div>*@
+    </div>
+}
+else
+{
+    <div class="cut-text" onclick="User.prototype.LoginInPopup();">
+        <span class="profile-icon"></span>
+        <div class="d-none d-lg-block">@WebStore_Resources.LabelSignInRegister</div>
+    </div>
+}
+@*<script type="text/javascript">
+    $(document).click(function (e) {
+        var container = $("#userNameDiv");
+        if (!container.is(e.target) && container.has(e.target).length === 0) {
+            $("#accountMenusDiv .dropdown-menu").hide();
+        }
+    });
+</script>*@

@@ -1,0 +1,41 @@
+﻿@model Znode.Engine.WebStore.ViewModels.ProductViewModel
+@using Znode.Libraries.ECommerce.Utilities;
+@{
+    var IsChillpackrProduct = Model.Attributes.Value("IsChillpackrProduct") != null && Model.Attributes.Value("IsChillpackrProduct") == "true";
+}
+<h1 class="product-name mt-4 mt-lg-0" title="@Html.RenderBlock(Model.Name)" data-test-selector="hdgProductName">@Html.RenderBlock(Model.Name)</h1>
+<div class="col-12 p-0 mt-3 mb-2 b2b-sku-brand">
+    <div class="product-number-details">
+        <div class="product-number" data-test-selector="divProductNumber">
+            @if (!string.IsNullOrEmpty(Model.SKU) && !Model.IsQuickView)
+            {
+                <span>@WebStore_Resources.TitleSKU:</span>
+                string sku = !string.IsNullOrEmpty(Model.ConfigurableProductSKU) ? Model.ConfigurableProductSKU : Model.SKU;
+                @Html.RenderBlock(sku)
+            }
+        </div>
+        @if (!string.IsNullOrEmpty(Model.Attributes?.ValueFromSelectValue(ZnodeConstant.Brand)) && Model.IsBrandActive && !Model.IsQuickView)
+        {
+            <div class="product-brand">
+                <span data-test-selector="spnProductBrandLabel">@WebStore_Resources.LabelProductBrand</span>
+                <a href="@Url.GetBrandUrl(Model.BrandSeoUrl, null, Model.BrandId)" data-test-selector="linkProductBrand" id="lnkProductBrand">
+                    @Html.RenderBlock(Model.Attributes?.ValueFromSelectValue(ZnodeConstant.Brand))
+                </a>
+            </div>
+        }
+    </div>
+</div>
+@if (IsChillpackrProduct)
+{
+    <div class="product_highlight">
+        @if (HelperUtility.IsNotNull(Model?.HighlightLists) && Model.HighlightLists.Any())
+        {
+            @Html.Partial("_PLPProductHighLights", Model.HighlightLists)
+        }
+    </div>
+}
+@if (Model.Attributes.Value("ShortDescription") != null && !Model.IsQuickView)
+{
+    <div class="col-12 p-0 mb-3 product-short-description" data-test-selector="divShortDescription">@Html.RenderBlock(@WebUtility.HtmlDecode(Model.Attributes.Value("ShortDescription")))</div>
+}
+

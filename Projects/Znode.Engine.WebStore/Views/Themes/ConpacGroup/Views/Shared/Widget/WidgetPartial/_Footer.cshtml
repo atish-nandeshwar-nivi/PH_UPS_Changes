@@ -1,0 +1,55 @@
+﻿@using Znode.Engine.WebStore.Agents
+@using Znode.Libraries.ECommerce.Utilities
+@{              
+                int portalId = PortalAgent.CurrentPortal.PortalId;
+                string logo = !string.IsNullOrEmpty(PortalAgent.CurrentPortal.WebsiteLogo) ? MediaPaths.MediaPath + PortalAgent.CurrentPortal.WebsiteLogo : string.Empty;
+                string title = PortalAgent.CurrentPortal.WebsiteTitle;
+}
+<div class="row footer-container pb-4">
+    <div class="col-12 col-lg-6 col-xl-6">
+        <div class="row" itemscope itemtype="http://schema.org/WebPage">
+            <div class="col-12 col-md-7 footer-block mt-5 footer-block-call">
+                <z-widget>@Html.WidgetPartial("TextEditor", "CustomerSupport", "2545", ZnodeCMSTypeofMappingEnum.PortalMapping.ToString(), PortalAgent.CurrentPortal.PortalId)</z-widget>
+            </div>
+            <div class="col-12 col-md-5 footer-block mt-4 mt-md-5 p-lg-0">
+                @*<h3 class="footer-header" data-test-selector="lblFooterHelpHeading">@WebStore_Resources.LabelHelp</h3>*@
+                <z-widget>@Html.WidgetPartial("LinkPanel", "HelpSection", "2243", ZnodeCMSTypeofMappingEnum.PortalMapping.ToString(), PortalAgent.CurrentPortal.PortalId)</z-widget>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6 col-xl-6">
+        <div class="row" itemscope itemtype="http://schema.org/WebPage">
+            <div class="col-12 col-md-6 footer-block mt-md-5">
+                @*<h3 class="footer-header" data-test-selector="lblFooterStoreInfo">@WebStore_Resources.TitleStoreInfo</h3>*@
+                <z-widget>@Html.WidgetPartial("LinkPanel", "StoreInfo", "2253", ZnodeCMSTypeofMappingEnum.PortalMapping.ToString(), PortalAgent.CurrentPortal.PortalId)</z-widget>
+            </div>
+            <div class="col-12 col-md-6 footer-block mt-4 mt-md-5 p-0">
+                <img src="~/Views/Themes/ConpacGroup/Images/PackagingHeroFooter-logo.png" alt="@title" class="img-fluid"/>
+                <div class="col-12 col-xs-12 p-0">
+                    <div itemscope itemtype="http://schema.org/WebPage">
+                        <!--News Letter Widget-->
+                        <z-widget>@Html.WidgetPartial("NewsLetter", "NewsLetter", "777", ZnodeCMSTypeofMappingEnum.PortalMapping.ToString(), portalId)</z-widget>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row copy-right-line">
+    <div class="col-12 col-lg-6 col-xl-3 text-left iso-certificate-css">
+        @*@Html.RenderMessage("ISOCertifiedMsg")*@
+        <a href="/iso-certification">
+            <span>ISO 9001:2015 Certified</span>
+            <ul class="ftr-copyright-ul">
+                <li><img src="~/Views/Themes/ConpacGroup/Images/logo-footer-01.png" class="img-fluid" alt="ISO Certification 1" /></li>
+                <li><img src="~/Views/Themes/ConpacGroup/Images/logo-footer-02.png" class="img-fluid" alt="ISO Certification 2" /></li>
+                <li><img src="~/Views/Themes/ConpacGroup/Images/logo-footer-03.png" class="img-fluid" alt="ISO Certification 3" /></li>
+            </ul>
+        </a>
+    </div>
+    <div class="col-12 col-lg-6 col-xl-9 text-right">
+        <div class="footer-copyright mt-2 mb-4 mb-lg-3 key-FooterCopyrightText">@Html.RenderMessage(WebStoreConstants.FooterCopyrightText)</div>
+    </div>
+</div>
+<a href="#layout" class="back-to-top" data-test-selector="linkBackToTop" aria-hidden="true" tabindex="-1"><span class="up-icon"></span></a>
+<script async>$('[itemtype = "http://schema.org/WebPage"] a').attr("itemprop", "significantLinks");</script>

@@ -1,0 +1,23 @@
+﻿.login-container .external-login .social {
+    display:none;
+}
+.login-container .b2b-form {
+    font-size: $base-font-size + 1;
+
+    /*.btn {
+        font-size: $base-font-size + 1;
+    }*/
+
+    form {
+        input {
+            font-size: $base-font-size + 1 !important;
+        }
+
+        .styled-input label {
+            font-size: $base-font-size + 1 !important;
+        }
+    }
+}
+/*#layout-account-login {
+    font-size: $base-font-size + 1;
+}*/

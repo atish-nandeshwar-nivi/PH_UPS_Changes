@@ -1,0 +1,299 @@
+﻿@using Znode.Engine.WebStore.Helpers;
+@using Znode.Engine.WebStore.ViewModels
+@model ShippingOptionListViewModel
+@{
+    var ErrorMessage = Model.HasError ? Model.ErrorMessage : WebStore_Resources.ErrorAddAddressShippingOption;
+    bool wareHouseDown;
+    List<string> boxSKUs = new List<string>();
+    List<string> JitSKUs = new List<string>();
+    List<string> UpsSKUs = new List<string>();//Atish ups
+    List<string> FreeFreightSKUs = new List<string>();
+    List<string> shippers = new List<string>();
+    string SkuItemCarriers = string.Empty;
+    if (Model?.ShippingOptions?.Count > 0)
+    {
+        var custom1 = Model.ShippingOptions?.FirstOrDefault(x => x.Custom1 != null)?.Custom1;
+        SkuItemCarriers = custom1;
+        var itemCarriers = new Dictionary<string, string>();
+        if (custom1 != null)
+        {
+            //{"PH-211101":"JIT","PH-211111":"JIT","PH-211115":"JIT"}^{}
+            foreach (string item in custom1.Split('^'))
+            {
+                if (item != "{}")
+                {
+                    var dict = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(item);
+                    if (itemCarriers == null || itemCarriers.Count == 0)
+                    {
+                        foreach (var carr in dict)
+                        {
+                            itemCarriers.Add(carr.Key, carr.Value);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var carr in dict)
+                        {
+                            if (itemCarriers.ContainsKey(carr.Key))
+                            {
+                                continue;
+                            }
+                            itemCarriers.Add(carr.Key, carr.Value);
+                        }
+                    }
+                }
+            }
+
+            //var dict = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(custom1)["_itemCarriers"];
+            //var itemCarriers = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(dict);
+            JitSKUs = itemCarriers.Where(x => x.Value == "JIT").Select(y => y.Key).ToList();
+            boxSKUs = itemCarriers.Where(x => x.Value == "Box Partners").Select(y => y.Key).ToList();
+            UpsSKUs = itemCarriers.Where(x => x.Value == "UPS").Select(y => y.Key).ToList();//Atish ups
+            FreeFreightSKUs = itemCarriers.Where(x => x.Value == "FreeShipping").Select(y => y.Key).ToList();
+            shippers = Model.ShippingOptions?.Select(o => o.ShippingTypeName).Distinct().ToList();
+        }
+
+    }
+    HttpContext.Current.Session[WebStoreConstants.CartModelSessionKey + "_BOXSKUS"] = boxSKUs;
+    HttpContext.Current.Session[WebStoreConstants.CartModelSessionKey + "_JITSKUS"] = JitSKUs;
+    HttpContext.Current.Session[WebStoreConstants.CartModelSessionKey + "_UPSSKUS"] = UpsSKUs;//Atish Ups
+    HttpContext.Current.Session[WebStoreConstants.CartModelSessionKey + "_FREESKUS"] = FreeFreightSKUs;
+    HttpContext.Current.Session[WebStoreConstants.CartModelSessionKey + "_SHIPPERS"] = shippers;
+    HttpContext.Current.Session[WebStoreConstants.CartModelSessionKey + "_ItemCarriers"] = SkuItemCarriers;
+    bool showFreeShipping = Model.ShippingOptions.Any(x => x.ShippingCode == "FreeShipping");
+    var allFreeShipping = Model.ShippingOptions.All(x => x.ShippingCode == "FreeShipping") && Model.ShippingOptions.Count > 0;
+}
+@try
+{
+    wareHouseDown = Model?.ShippingOptions?.GroupBy(v => v.ShippingTypeName).Any(g => !g.Any(o => o.FormattedShippingRate != "$0.00" || o.ShippingCode == "FreeShipping" || o.Description.IndexOf("free freight", StringComparison.OrdinalIgnoreCase) > -1)) == true;
+}
+catch (Exception)
+{
+    wareHouseDown = false;
+}
+
+@{
+    bool ShippingOptionRateZero = Model.ShippingOptions.Any(x => x.ShippingCode != "FreeShipping" && x.ShippingCode != "OURTRUCK" && x.ShippingCode != "LOCALFREIGHT" && x.FormattedShippingRate == "$0.00" || Model.ErrorMessage == "The maximum per package weight for the selected service is 150 pounds"); //<--------//Atish Nivi code ups
+}
+<div class="col-12 p-0 h-100">
+    <div id="loaderId"> </div>
+    <div class="col-12 p-0" id="shippingDiv">
+        @using (Ajax.BeginForm("CustomCartReview", "PHCheckout", new AjaxOptions() { UpdateTargetId = "cart-review-content", OnSuccess = "Checkout.prototype.ShippingErrorMessage();", OnBegin = "Checkout.prototype.ShowPaymentLoader();", OnComplete = "Checkout.prototype.HidePaymentLoader();", OnFailure = "Checkout.prototype.HidePaymentLoader();" }))
+        {
+            if (Model?.ShippingOptions?.Count > 0 && !ShippingOptionRateZero)
+            {
+                if (!Model.ShippingOptions.Any(x => x.IsSelected))
+                {
+                    Model.ShippingOptions.FirstOrDefault(x => x.IsSelected = Model.IsB2BUser && Model.OmsQuoteId > 0 ? true : false);
+                }
+
+                <div class="align-items-baseline">
+                    <div>
+                        @{ List<string> shipperTypes = new List<string>(); }
+                        @foreach (var shipperType in Model.ShippingOptions.Select(o => o.ShippingTypeName).Distinct().ToArray())
+                        {
+                            <input type="hidden" id="ptype" value="@shipperType" />
+                            var strShipperType = shipperType == "Warehouse" ? "JIT" : (shipperType == "Elgin, IL" ? "BOX" : shipperType == "UPS" ? "UPS" : "FreeShipping");//<-------Atish  ups
+                            string checkboxName = "ShippingOptions_" + strShipperType;
+                            shipperTypes.Add(checkboxName);
+                            <div class="col-lg-12 col-12 border-top-bottom">
+                                @if (strShipperType == "JIT")
+                                {
+                                    <label class="warehousename" id="jit_warehouse">@Html.RenderMessage("JITCheckout")</label>
+                                }
+                                else if (strShipperType == "BOX")
+                                {
+                                    <label class="warehousename" id="box_warehouse">@Html.RenderMessage("boxCheckout")</label>
+                                }
+                                else if (strShipperType == "UPS")//Atish ups
+                                {
+                                    <label class="warehousename" id="ups_warehouse">UPS</label>
+                                }
+                                else
+                                {
+                                    <label class="warehousename" id="freefreight_warehouse">Free Freight</label>
+                                }
+                            </div>
+                            int i = 0;
+                            ShippingOptionViewModel FirstOption = Model.ShippingOptions.FirstOrDefault(o => o.ShippingTypeName == shipperType && o.Custom1 != null);
+                            string CityState = (FirstOption != null ? (FirstOption.Custom1 != null ? " (" + FirstOption.Custom1.ToString() + ")" : String.Empty) : string.Empty);
+
+                            foreach (ShippingOptionViewModel option in Model.ShippingOptions.Where(o => o.ShippingTypeName == shipperType))
+                            {
+                                string estimateDate = !string.IsNullOrEmpty(option.EstimateDate) ? " - (" + (@WebUtility.HtmlDecode(option.EstimateDate)) + ")" : string.Empty;
+                                if (option.ShippingCode != "FreeShipping")
+                                {
+                                    string originalShippingRate = !string.IsNullOrEmpty(option?.FormattedShippingRateWithoutDiscount) ? "{" + @WebUtility.HtmlDecode(option.FormattedShippingRateWithoutDiscount.ToString()) + "}" : string.Empty;
+                                    <div class="align-items-baseline block-content-new">
+                                        <div class="styled-input">
+                                            <input data-test-selector="chkShippingOption" data-shippingsclass="@option.ClassName" onclick="Checkout.prototype.CalculateShipping('')" type="radio" id="@option.ShippingCode.Replace(" ", " _")" data-shippingCode="@option.Description" name="@checkboxName" value="@option.ShippingId" @( option.IsSelected ? "checked=checked" : "") />
+                                            <label data-test-selector="lblShipping" for="@option.ShippingCode.Replace(" ", " _")">@WebUtility.HtmlDecode(option.Description)@estimateDate - @option.DeliveryTimeframe - @WebUtility.HtmlDecode(option.FormattedShippingRate) <strike class="error-msg">@originalShippingRate</strike></label>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="align-items-baseline block-content-new">
+                                        <div class="col-xs-12 nopadding styled-input" style="@(!showFreeShipping? "display:none;":"")">
+                                            <input data-test-selector="chkShippingOption" data-shippingsclass="@option.ClassName" type="radio" id="Free_Shipping" data-shippingCode="@option.Description" name="Free_Shipping" value="@option.ShippingId" onclick="Checkout.prototype.CalculateShipping('')" checked="checked" />
+                                            <label data-test-selector="lblShipping" for="@option.ShippingCode.Replace(" ", " _")">@WebUtility.HtmlDecode(option.Description)@estimateDate - @WebUtility.HtmlDecode(option.FormattedShippingRate)</label>
+                                            <input data-test-selector="txtFreeShipping" type="hidden" id="hdnIsFreeShipping" value="True" ShippingId="@option.ShippingId" name="@option.ShippingCode.Replace(" ", " _")" data-ShippingClassName="@option.ClassName" />
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            i++;
+                        }
+                        <div class="" id="customerShippingDiv" style="display:none" name="CustomerShipping">
+                            <div class="form-group">
+                                <div class="col-12 p-0">
+                                    <div class="control-label">
+                                        @Html.LabelFor(model => model.AccountNumber, new { @class = "required" })
+                                    </div>
+                                    <div class="control-md">
+                                        @Html.TextBoxFor(model => model.AccountNumber, new { @maxLength = "100", @onblur = "Checkout.prototype.ValidateCustomerShipping();" })
+                                        <div id="errorAccountNumber" class="field-validation-error" style="display: none">@WebStore_Resources.ErrorAccountNumber</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group pt-3">
+                                <div class="col-12 p-0">
+                                    <div class="control-label">
+                                        @Html.LabelFor(model => model.ShippingMethod, new { @class = "required" })
+                                    </div>
+                                    <div class="control-md">
+                                        @Html.TextBoxFor(model => model.ShippingMethod, new { @maxLength = "100", @onblur = "Checkout.prototype.ValidateCustomerShipping();" })
+                                        <div id="errorShippingMethod" class="field-validation-error" style="display: none">@WebStore_Resources.ErrorShippingMethod</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @{
+                            var selectedShippingClassName = Model.ShippingOptions.FirstOrDefault(x => x.IsSelected)?.ClassName;
+                            var hdnShipperTypes = shipperTypes.Where(x => x != "ShippingOptions_FreeShipping");
+                        }
+                        <input type="hidden" id="hndShippingclassName" value='@selectedShippingClassName' />
+
+                        <input type="hidden" id="hdnShipperTypes" value="@String.Join(",",hdnShipperTypes)" />
+                        <input type="hidden" id="hdnAllFreeShipping" value="@(allFreeShipping?1:0)" />
+                        @if (shipperTypes.Count > 0 || showFreeShipping)
+                        {
+                            <input class="d-none" style="display:none" id="h_shipping_option" name="ShippingOptions" type="radio" checked="checked" value="" />
+                        }
+
+                    </div>
+                </div>
+
+            }
+            else
+            {
+                if (ShippingOptionRateZero && Model?.ShippingOptions?.Count > 0)
+                {
+                    <div class="col-xs-12 col-12 block-content">
+                        <span>@Html.RenderMessage("ShippingApiErrorMessage")</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-xs-12 col-12 block-content">
+                        <span>@ErrorMessage</span>
+                    </div>
+                }
+
+            }
+            <div class="col-xs-12 col-12 block-content success-msg" style="@(!allFreeShipping? "display:none;":"")" id="message-freeshipping">
+                <span>@WebStore_Resources.FreeShippingMessage</span>
+            </div>
+        }
+    </div>
+    @*<div class="col-12 col-md-12">
+            <p>Select all that apply</p>
+            <label>Optional Fees</label>
+
+        </div>*@
+</div>
+@if (Helper.IsEnhancedEcommerceTrackingEnabled())
+{
+    <script>
+        $('input[name = "ShippingOptions"]').on("click", function () {
+            var selectedShippingOption = $(this).data('shippingcode');
+            GoogleAnalytics.prototype.SendEcommerceCheckoutOptionData(2, selectedShippingOption);
+        })
+    </script>
+}
+<input type="hidden" id="boxskus" value="@string.Join(",",boxSKUs)" />
+<input type="hidden" id="jitskus" value="@string.Join(",",JitSKUs)" />
+<input type="hidden" id="upsskus" value="@string.Join(",",UpsSKUs)" />@*Atish ups*@
+<input type="hidden" id="freefreightskus" value="@string.Join(",",FreeFreightSKUs)" />
+<input type="hidden" id="jit_warehouse_lbl" value="@Html.RenderMessage("JIT")" />
+<input type="hidden" id="box_warehouse_lbl" value="@Html.RenderMessage("box")" />
+<input type="hidden" id="freefreight_warehouse_lbl" value="@Html.RenderMessage("JIT")" />
+<input type="hidden" id="hdnallFreeShipping" value="@allFreeShipping" />
+
+<input type="hidden" id="hdnshippers" value="@string.Join("^",shippers)" />
+<script>
+    //Split cart items depending on warehouse
+    var boxCartItems = [];
+    var jitCartItems = [];
+    var UpsCartItems = [];
+    var freefreightCartItems = [];
+    var cartRowHtml = "";
+    $(function () {
+
+        collectCartRowIds();
+
+        $("#shippingDiv label.warehousename").each(function (ind, em) {
+            var warehouseid = $(em).attr("id");
+            cartRowHtml += getCartRowsHtml(warehouseid);
+        })
+        if ($("#shippingDiv label.warehousename").length > 0) {
+            $("#cartrow_container").html("");
+            $("#cart-review-content .checkout-cart .border-top-bottom").remove();
+            $("#cart-review-content .checkout-cart .b2b-cart").remove();
+            $("#order_summary").after(cartRowHtml);
+        }
+    });
+
+    function collectCartRowIds() {
+        var jitskus = $("#jitskus").val().split(",");
+        var boxskus = $("#boxskus").val().split(",");
+        var upsskus = $("#upsskus").val().split(",");//Atish ups
+        var freefreightskus = $("#freefreightskus").val().split(",");
+        var shippers = $("#hdnshippers").val().split("^");
+        $("#cart-review-content .checkout-cart .b2b-cart-row").each(function (i, em) {
+            var sku = $(em).data("simplesku");
+
+            if (jitskus.length > 0 && jitskus.indexOf(sku) != -1)
+                jitCartItems.push($(em).attr("id"));
+            else if (boxskus.length > 0 && boxskus.indexOf(sku) != -1)
+                boxCartItems.push($(em).attr("id"));
+            else if (upsskus.length > 0 && upsskus.indexOf(sku)!= -1)
+                UpsCartItems.push($(em).attr("id"));//Atish ups
+            else if (freefreightskus.length > 0 && freefreightskus.indexOf(sku) != -1)
+                freefreightCartItems.push($(em).attr("id"));//Atish ups
+        });
+    }
+
+    function getCartRowsHtml(warehouseid) {
+        var htm = "<div class='col-lg-12 col-12 border-top-bottom cart-split'><label>" + $("#" + warehouseid).html() + "</label></div><div class='col-12 b2b-cart cart-split'>";
+        var idArray = warehouseid.indexOf("jit") != -1 ? jitCartItems : (warehouseid.indexOf("box") != -1 ? boxCartItems : warehouseid.indexOf("ups") != -1 ? UpsCartItems : freefreightCartItems);//Atish ups
+        for (i = 0; i < idArray.length; i++) {
+            htm += $("#" + idArray[i]).prop("outerHTML");
+        }
+        htm += "</div>";
+        return htm;
+    }
+
+
+
+</script>
+<!--- grayout payment methods-->
+<script>
+    $(function () {
+        if (Checkout.prototype.isShippingSelected())
+            Checkout.prototype.grayoutPaymentOption(false);
+        else
+            Checkout.prototype.grayoutPaymentOption(true);
+    });
+
+</script>

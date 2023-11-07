@@ -1,0 +1,88 @@
+﻿@using Znode.Engine.WebStore.Agents
+@{
+    int portalId = PortalAgent.CurrentPortal.PortalId;
+    bool isHomeRecommendationEnabled = (PortalAgent.CurrentPortal?.RecommendationSetting?.IsHomeRecommendation).GetValueOrDefault();
+    string ContentContainerPartialViewPath = "~/Views/Themes/Templates/_Container.cshtml";
+    string HomePageTickerContainerPartialViewPath = "~/Views/Themes/Templates/_HomePageTicker.cshtml";
+    string AdSpacePartialViewPath = "~/Views/Themes/Templates/_HomePageAdSpace.cshtml";
+}
+@*@if (Request.IsAuthenticated)
+{
+    string message = GlobalAttributeHelper.GetUserMessage();
+    if (!string.IsNullOrEmpty(message))
+    {
+        <div class="container">
+            <div class="row">
+                <div class="col p-0">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12 text-center user-promotion-msg text-break">
+                                @message
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+}*@
+
+<div class="container">
+    <div class="row margin-top-25">
+        <!--Home Page Slider Widget-->
+        <div class="col-12 col-md-7 p-0">
+            <div class="col home-slider">
+                <z-widget>@Html.WidgetPartial("BannerSlider", "Slider", "555", ZnodeCMSTypeofMappingEnum.PortalMapping.ToString(), portalId)</z-widget>
+            </div>
+        </div>
+        <!--Advertisement Banner Content Block-->
+        <div class="col-12 col-md-5">
+            <div class="row first-side-banner-height">
+                <div class="col-12 col-md-12">
+                    @Html.RenderMessage("HomeSideBanner1")
+                </div>
+            </div>
+            <div class="row margin-top-25 second-side-banner-height">
+                <div class="col-12 col-md-6">
+                    @Html.RenderMessage("HomeSideBanner2")
+                </div>
+                <div class="col-12 col-md-6">
+                    @Html.RenderMessage("HomeSideBanner3")
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-12 col-xs-12 carousel-card">
+    <div class="container">
+        <div class="row">
+            <div class="col p-0">
+                <!--BestSelling Widget-->
+                <z-widget>@Html.WidgetPartialAuto("CategoryList", "Category List", "1992", ZnodeCMSTypeofMappingEnum.PortalMapping.ToString(), portalId)</z-widget>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-xs-12 col-12 margin-bottom-30 bottom-banner-height">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-4 col-xs-12 margin-bottom-30">
+                @Html.RenderMessage("HomeBottomBanner1")
+            </div>
+            <div class="col-12 col-md-4 col-xs-12 margin-bottom-30">
+                @Html.RenderMessage("HomeBottomBanner2")
+            </div>
+            <div class="col-12 col-md-4 col-xs-12 margin-bottom-30">
+                @Html.RenderMessage("HomeBottomBanner3")
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+

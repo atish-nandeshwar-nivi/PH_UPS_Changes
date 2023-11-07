@@ -1,0 +1,154 @@
+﻿@using Znode.Engine.WebStore.ViewModels
+@using Znode.Libraries.ECommerce.Utilities
+@model ProductViewModel
+@using Znode.Engine.WebStore.Agents
+@{
+    string callForPricingMessage = Html.RenderMessage(WebStoreConstants.ProductCallForPricing)?.ToString();
+    bool CallForPricing = Convert.ToBoolean(Model.Attributes?.Value(ZnodeConstant.CallForPricing));
+    ProductPromotionViewModel promotionCallForPricing = Model?.Promotions?.FirstOrDefault(x => x.PromotionType == ZnodeConstant.PromotionCallForPricing);
+    if (HelperUtility.IsNotNull(promotionCallForPricing))
+    {
+        CallForPricing = true;
+        callForPricingMessage = string.IsNullOrEmpty(promotionCallForPricing.PromotionMessage) ? callForPricingMessage : promotionCallForPricing.PromotionMessage;
+    }
+    var _portal = PortalAgent.CurrentPortal;
+    string _fileLocation = $"/Views/Themes/{_portal.Theme}";
+    //string disable = CallForPricing || !Model.ShowAddToCart ? "disabled" : "";
+    string disable = CallForPricing ? "disabled" : "";
+    string productType = Model?.Attributes?.SelectAttributeList(ZnodeConstant.ProductType)?.FirstOrDefault()?.Code;
+    string UOM = Attributes.ValueFromSelectValue(Model?.Attributes, "UOM");
+    string ratingText = Model.Rating > 0 ? string.Format(WebStore_Resources.TextRating, Math.Round(Model.Rating, 1), Model.TotalReviews) : string.Empty;
+    var domainurl = HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority);
+    bool isShowPriceAndInventoryToLoggedInCustomersOnly = GlobalAttributeHelper.IsShowPriceAndInventoryToLoggedInUsersOnly();
+    bool showDefaultAndAllLocationsInventory = GlobalAttributeHelper.IsShowAllLocationsInventory();
+    bool isObsolete = Convert.ToBoolean(Model.Attributes?.Value(ZnodeConstant.IsObsolete));
+    string obsoleteClass = isObsolete ? "cut-price" : "";
+    string productUrl = domainurl + Url.GetProductUrl(Model?.SEOUrl, Model?.PublishProductId.ToString());
+    string productOnClickEvent = Helper.IsEnhancedEcommerceTrackingEnabled() ? "SendEcommerceData(this,'" + Model.SKU + "')" : "";
+    var catModel = ViewContext.Controller.ViewData.Model as Znode.Engine.WebStore.ViewModels.CategoryViewModel;
+    decimal quantity = string.IsNullOrEmpty(Model.Attributes?.Value(ZnodeConstant.MinimumQuantity)) ? 1 : Convert.ToDecimal(Model.Attributes?.Value(ZnodeConstant.MinimumQuantity));
+    string maxQty = Model.Attributes?.Value(ZnodeConstant.MaximumQuantity);
+    string minQty = Model.Attributes?.Value(ZnodeConstant.MinimumQuantity);
+    bool hasFreeFreightItems = Convert.ToBoolean(ViewData["hasFreeFreightItems"]);
+    bool hasCAWarehouseItems = Convert.ToBoolean(ViewData["hasCAWarehouseItems"]);
+}
+<tr>
+    <td>
+        @{
+            string imageSrc = string.IsNullOrEmpty(Model.ImageSmallPath) ? "/no-image.png" : Model.ImageSmallPath.Replace("/250/", "/38/");
+        }
+        <a href="@domainurl@Url.GetProductUrl(Model?.SEOUrl, Model?.PublishProductId.ToString())" onclick=@productOnClickEvent>
+            <img class="img-fluid b-lazy img-small" src="@_fileLocation/Images/throbber.svg" data-src="@imageSrc" id="@Model.PublishProductId" alt="@Html.RenderBlock(Model.Name)" data-test-selector="imgProduct"  />
+        </a>
+    </td>
+    <td>
+        <a href="@domainurl@Url.GetProductUrl(Model?.SEOUrl, Model?.PublishProductId.ToString())" onclick=@productOnClickEvent>
+            @Model.SKU
+        </a>
+    </td>
+    @{
+        for (int i = 1; i <= 3; i++)
+        {
+            string colName = catModel.Attributes?.Value("MatrixColumn" + i);
+            string colValue = null;
+
+            if (colName != null)
+            {
+                var att = Model.Attributes.FirstOrDefault(x => x.AttributeCode == colName);
+                if(att!=null)
+                {
+                    colValue = att.AttributeTypeName == "Simple Select" ? Attributes.ValueFromSelectValue(Model.Attributes, colName) : Model.Attributes.Value(colName);
+                }
+                <td>@colValue</td>
+            }
+        }
+        var ShipUnitLabel = catModel.Attributes?.Value("ShipUnitLabel");
+        var ShipUnit = catModel.Attributes.Value("ShipUnit");
+        var PriceUnitLabel = catModel.Attributes?.Value("PriceUnitLabel");
+        <td>@Model.Attributes.Value("QtyPerShipUnit") </td>
+    }
+    <td class="insider-table">
+        <table class="table-responsive">
+            <tbody class="tbody-count">
+                <tr>
+                    <td>
+                        <span>
+                            @if (Model.Inventory.Any(x => x.WarehouseName.Contains("Box Partners") && x.Quantity > 0))
+                            {
+                                <img src="~/Views/Themes/ConpacGroup/Images/checkmark.png" class="img-fluid" />
+                            }
+                            else
+                            {
+                                <img src="~/Views/Themes/ConpacGroup/Images/NA.png" class="img-fluid" />
+                            }
+                        </span>
+                    </td>
+                    <td>
+                        <span>
+                            @if (Model.Inventory.Any(x => x.WarehouseName.Contains("JIT") && x.Quantity > 0))
+                            {
+                                <img src="~/Views/Themes/ConpacGroup/Images/checkmark.png" class="img-fluid" />
+                            }
+                            else
+                            {
+                                <img src="~/Views/Themes/ConpacGroup/Images/NA.png" class="img-fluid" />
+                            }
+                        </span>
+                    </td>
+                    @if (hasCAWarehouseItems)
+                    {
+                        <td>
+                            <span>
+                                @if (Model.Attributes?.Value("CaliforniaWarehouse") == "true")
+                                {
+                                    <img src="~/Views/Themes/ConpacGroup/Images/checkmark.png" class="img-fluid" />
+                                }
+                                else
+                                {
+                                    <img src="~/Views/Themes/ConpacGroup/Images/NA.png" class="img-fluid" />
+                                }
+                            </span>
+                        </td>
+                    }
+                    @if (hasFreeFreightItems)
+                    {
+                        <td>
+                            <span>
+                                @{
+                                    var attFree = Model.Attributes.Value("FreeFreight");
+                                }
+                                @if (attFree != null && attFree == "true")
+                                {
+                                    <img src="~/Views/Themes/ConpacGroup/Images/checkmark.png" class="img-fluid" />
+                                }
+                                else
+                                {
+                                    <img src="~/Views/Themes/ConpacGroup/Images/NA.png" class="img-fluid" />
+                                }
+                            </span>
+                        </td>
+                    }
+
+                </tr>
+            </tbody>
+        </table>
+    </td>
+    <td class="insider-table">
+        <table class="table-responsive">
+            <tbody class="tbody-count">
+                <tr>
+                    @foreach (var tier in Model.TierPriceList)
+                    {
+                    <td><span>@Helper.FormatPriceWithCurrency(tier.Price, Model.CultureCode)</span></td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+    </td>
+    <td class="add-cart-btn-plp">
+        <div class="input-group">
+            <input type="text" class="form-control txtQuickOrderQuantity" value="@quantity" id="txtQuickOrderQuantity_@Model.PublishProductId" placeholder="Qty" aria-label="Qty" maxlength="4" onchange="" data-test-selector="txtQuantityQuickOrder" data-sku="@Model.SKU" data-maxquantity="@maxQty" data-minquantity="@minQty" aria-describedby="basic-addon2">
+            <button class="btn btn-primary" id="@Model.PublishProductId" onclick="QuickOrder.prototype.AddtoCartPlp(this)" data-test-selector="btnQuickOrder">ADD</button>
+        </div>
+    </td>
+</tr>

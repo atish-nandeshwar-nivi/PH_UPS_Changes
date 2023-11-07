@@ -1,0 +1,210 @@
+﻿@using Znode.Engine.WebStore.ViewModels
+@model CartViewModel
+@{
+    string _displayRemoveLink = Request.Path.Contains("Checkout") ? Model.ShoppingCartItems.Any(x => !x.IsAllowedTerritories) ? "" : "display:none" : "";
+    List<CartItemViewModel> cartItemViewModel = Model.ShoppingCartItems?.AsEnumerable().Reverse().ToList();
+
+    //This encrypted total value is being used by Payflow payment ONLY.
+    string encryptedOrderTotal = Helper.GetEncryptedValue(Convert.ToString(Model.Total));
+    //save calculated tax on session to be used in _TotalTable.cshtml
+    HttpContext.Current.Session[WebStoreConstants.CartModelSessionKey + "_TAX"] = Model.TaxCost;
+    List<string> boxSKUs = HttpContext.Current.Session[WebStoreConstants.CartModelSessionKey + "_BOXSKUS"] as List<string>;
+    List<string> jitSKUs = HttpContext.Current.Session[WebStoreConstants.CartModelSessionKey + "_JITSKUS"] as List<string>;
+    List<string> upsSKUs = HttpContext.Current.Session[WebStoreConstants.CartModelSessionKey + "_UPSSKUS"] as List<string>;//Atish ups
+    List<string> freefreightSKUs = HttpContext.Current.Session[WebStoreConstants.CartModelSessionKey + "_FREESKUS"] as List<string>;
+
+    List<string> shippers = HttpContext.Current.Session[WebStoreConstants.CartModelSessionKey + "_SHIPPERS"] as List<string>;
+    List<CartItemViewModel> boxItems = new List<CartItemViewModel>(), jitItems = new List<CartItemViewModel>(), upsItems = new List<CartItemViewModel>(),  freefreightItems = new List<CartItemViewModel>();
+    foreach (var item in Model.ShoppingCartItems)
+    {
+        var sku = string.IsNullOrEmpty(item.SKU) ? item.ConfigurableProductSKUs : item.SKU;
+
+        if (boxSKUs != null && boxSKUs.Contains(sku))
+        {
+            boxItems.Add(item);
+        }
+
+        if (jitSKUs != null && jitSKUs.Contains(sku))
+        {
+            jitItems.Add(item);
+        }
+        if (upsSKUs != null && upsSKUs.Contains(sku))//Atish ups
+        {
+            upsItems.Add(item);
+        }
+
+        if (freefreightSKUs != null && freefreightSKUs.Contains(sku))
+        {
+            freefreightItems.Add(item);
+        }
+    }
+}
+<div class="col-12 p-0 h-100 b2b-block checkout-cart">
+    <h3 class="block-title" id="order_summary">
+        @if (Model.IsQuoteRequest)
+        {
+            @WebStore_Resources.HeadingQuoteSummary
+        }
+        else
+        {
+            @WebStore_Resources.SinglePageCheckoutOrderSummary
+        }
+    </h3>
+    @*<div class="col-lg-12 col-12 border-top-bottom">
+            <label>Box Partners - IL</label>
+        </div>*@
+    @{
+        if (Model.ShoppingCartItems?.Count > 0)
+        {
+            //Start Split cart items depending on warehouse
+            if (shippers == null || shippers.Count == 0 || (boxItems.Count == 0 && jitItems.Count == 0 && freefreightItems.Count == 0))
+            {
+                <div class="col-12 b2b-cart" id="cartrow_container">
+                    @foreach (CartItemViewModel cartItem in Model.ShoppingCartItems.AsEnumerable().Reverse())
+                    {
+                        @Html.Partial("../cart/_CartRow", cartItem)
+                    }
+                </div>
+            }
+            else
+            {
+                foreach (var ship in shippers)
+                {
+                    if (ship == "Warehouse" && jitItems.Count() > 0)
+                    {
+                        <div class="col-lg-12 col-12 border-top-bottom">
+                            <label class="warehousename" id="jit_warehouse">@Html.RenderMessage("JIT")</label>
+                        </div>
+                        <div class="col-12 b2b-cart">
+                            @foreach (CartItemViewModel cartItem in jitItems.AsEnumerable().Reverse())
+                            {
+                                @Html.Partial("../cart/_CartRow", cartItem)
+                            }
+                        </div>
+                    }
+                    else if (ship.Contains("IL") && boxItems.Count() > 0)
+                    {
+                        <div class="col-lg-12 col-12 border-top-bottom">
+                            <label class="warehousename" id="box_warehouse">@Html.RenderMessage("box")</label>
+                        </div>
+                        <div class="col-12 b2b-cart">
+                            @foreach (CartItemViewModel cartItem in boxItems.AsEnumerable().Reverse())
+                            {
+                                @Html.Partial("../cart/_CartRow", cartItem)
+                            }
+                        </div>
+                    }
+                    else if (ship.Contains("UPS") && upsItems.Count() > 0)// Atish ups
+                    {
+                        <div class="col-lg-12 col-12 border-top-bottom">
+                            <label class="warehousename" id="box_warehouse">UPS</label>
+                        </div>
+                        <div class="col-12 b2b-cart">
+                            @foreach (CartItemViewModel cartItem in upsItems.AsEnumerable().Reverse())
+                            {
+                                @Html.Partial("../cart/_CartRow", cartItem)
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-lg-12 col-12 border-top-bottom">
+                            <label class="warehousename" id="free_warehouse">Free Freight</label>
+                        </div>
+                        <div class="col-12 b2b-cart">
+                            @foreach (CartItemViewModel cartItem in freefreightItems.AsEnumerable().Reverse())
+                            {
+                                @Html.Partial("../cart/_CartRow", cartItem)
+                            }
+                        </div>
+                    }
+                }
+            }
+
+        }
+    }
+
+    @*<div class="col-12 b2b-cart">
+            @if (Model.ShoppingCartItems?.Count > 0)
+            {
+                foreach (CartItemViewModel cartItem in Model.ShoppingCartItems.AsEnumerable().Reverse())
+                {
+                    @Html.Partial("../cart/_CartRow", cartItem)
+                }
+            }
+        </div>*@
+    <div class="col-12 col-md col-lg p-0 ml-auto">
+        <div class="col-12 cart-total mt-4 cart-total-section order-summary" id="summary-details">
+            @Html.Partial("../_TotalTable", Model)
+        </div>
+    </div>
+</div>
+
+@if (!Model.IsQuoteRequest && Model.Permission)
+{
+    <div class="col-12 p-0 mt-4">
+
+        <div class="row">
+            <div class="col">
+                <div class="col-12 col-md p-0 checkout-promotions-section">
+                    @if (Model.IsSinglePageCheckout)
+                    {
+                    @Html.Partial("../_ApplyCoupon", Model)
+                    }
+                </div>
+            </div>
+        </div>
+        
+    </div>
+}
+
+<div class="col-12 p-0 h-100 b2b-block mt-4">
+        <div class="row">
+            <div class="col">
+                <div class="col-12 col-md p-0 checkout-promotions-section">
+                    <h3 class="block-title">@WebStore_Resources.TitleAdditionalInfo</h3>
+                    
+                    <div class="col-12 b2b-block">
+                        <div class="form-group">
+                            <div class="col-12 block-content">
+                                <div class="block-items-title">
+                                    @WebStore_Resources.TitleAdditionalInformation
+                                </div>
+                                @Html.TextAreaFor(model => model.AdditionalInstruction, new { maxlength = 500, rows = 3 })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    @Html.HiddenFor(m => m.ErrorMessage, new { @id = "ShippingErrorMessage" })
+    @Html.HiddenFor(m => m.IsValidShippingSetting, new { @id = "ValidShippingSetting" })
+    @Html.HiddenFor(m => m.GiftCardMessage, new { @id = "cartGiftCardMessage" })
+    @Html.HiddenFor(m => m.GiftCardApplied, new { @id = "cartGiftCardApplied" })
+    @Html.HiddenFor(m => m.FreeShipping, new { @id = "cartFreeShipping" })
+    <script>
+    $(document).ready(function () {
+        Checkout.prototype.ChangeCartReviewSequence();
+        Checkout.prototype.ChangeSubmitOrderButtonText();
+    })
+    $("#hdnEncryptedTotalAmount").val('@encryptedOrderTotal');
+    </script>
+    @if (Helper.IsEnhancedEcommerceTrackingEnabled())
+    {
+        <script>
+        var data = @Html.RenderBlock(Json.Encode(Model.GetEcommerceCartItemsData()));
+        function SendEcommerceDataForRemoveSingleCartItem(control, sku) {
+            var dec = decodeURI(sku);
+            $.each(data, function (v, e) {
+                if (dec == e.SKU) {
+                    GoogleAnalytics.prototype.SendRemoveFromCartsForSingleCartItem(e);
+                }
+            });
+            $(control).closest('form').submit();
+        }
+        </script>
+    }

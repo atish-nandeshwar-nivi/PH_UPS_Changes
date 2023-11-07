@@ -1,0 +1,145 @@
+﻿@model Znode.Engine.Admin.ViewModels.PortalDisplaySettingViewModel
+@using Znode.Libraries.ECommerce.Utilities;
+@using Znode.Engine.Admin.Helpers;
+@using Znode.Engine.Admin.ViewModels;
+@{
+    string actionName = ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString();
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    ActionModel actionModel = new ActionModel { Action = actionName, Controller = controllerName, FormId = "frmEditDisplaySettings", CancelUrl = "/Store/List", Callback = null };
+    ViewBag.Title = @Admin_Resources.TitleStoreAndReps + " | " + @Admin_Resources.TitleMultifront;
+    string portalName = string.IsNullOrEmpty(Model?.PortalName) ? @Admin_Resources.TitleStore : Model?.PortalName;
+    string mediapath = string.IsNullOrEmpty(Model?.MediaPath) ? ZnodeAdminSettings.DefaultImagePath : Model?.MediaPath;
+    int? mediaId = Model?.MediaId > 0 ? Model?.MediaId : 0;
+    Layout = null;
+}
+<div class="col-sm-12 title-container">
+    <h1>@string.Format(@Admin_Resources.TitleManage, Admin_Resources.LabelExperience)<i class="z-minus"></i><span>@portalName</span></h1>
+    <div class="pull-right btn-container">
+        <button type="button" class="btn-text-icon" data-dismiss="modal" onclick="window.location.href = '/StoreExperience/List'" data-test-selector="linkCancel"><i class="z-back"></i>@Admin_Resources.ButtonCancel</button>
+        <div class="pull-right">
+            <button id="dvSave" type="button" class="btn-text btn-text-secondary" onclick="SaveCancel.prototype.SubmitForm('frmEditDisplaySettings')" data-test-selector="linkSave">@Admin_Resources.ButtonSave</button>
+        </div>
+    </div>
+</div>
+
+<div class="col-sm-12 manage-website-container nopadding">
+    @using (Ajax.BeginForm(actionName, controllerName, new AjaxOptions { InsertionMode = InsertionMode.Replace, OnSuccess = "WebSite.prototype.SaveDisplaySetting" }, new { @id = "frmEditDisplaySettings" }))
+    {
+        <h3 class="section-heading" data-test-selector="hdgDefaultImage">@Admin_Resources.LabelDefaultImage</h3>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    <label data-test-selector="lblImage">@Admin_Resources.LabelImage</label>
+                </div>
+                <div class="control-md">
+                    <div class="upload-images" id="divMediaId">
+                        <img id="MediaId" onclick="EditableText.prototype.BrowseMedia('MediaId','False','True','True')" src="@mediapath" class="img-responsive" data-test-selector="imgBrowseMedia">
+                        <span class="change-image" onclick="EditableText.prototype.BrowseMedia('MediaId','False','True','True')">@Admin_Resources.LinkChange</span>
+                        <input type="hidden" id="MediaId" name="MediaId" value="@mediaId">
+                        <input type='hidden' value=@AdminConstants.ImageExtensions Id='hdnMediaId' />
+                        @if (!Equals(mediapath, null) && !Equals(mediapath, ZnodeAdminSettings.DefaultImagePath))
+                        {
+                            <a class="upload-images-close" data-toggle="tooltip" data-placement="top" title="Remove" onclick="EditableText.prototype.RemoveImage('MediaId')"><i class="z-close-circle"></i></a>
+                        }
+                    </div>
+                </div>
+                <div id="UploadMediaId" class="appendMediaModel">
+                </div>
+            </div>
+        </div>
+
+        <h3 class="section-heading margin-top-25" data-test-selector="hdgAutoImageResizeSettings">@Admin_Resources.LabelAutoImageResizeSettings</h3>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(m => m.MaxLargeWidth, new { @class = "required", @data_test_selector = "lblMaxLargeWidth" })
+                </div>
+                <div class="control-sm">
+                    <div class="right-inner-icon">
+                        @Html.TextBoxFor(model => model.MaxLargeWidth, new { @data_test_selector = "txtMaxLargeWidth" })
+                        <i class="unit-text">@Admin_Resources.LabelPixels</i>
+                    </div>
+                </div>
+                <div class="col-sm-8 control-non nopadding">@Html.ValidationMessageFor(model => model.MaxLargeWidth, "", new { @data_test_selector = "valMaxLargeWidth" })</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(m => m.MaxMediumWidth, new { @class = "required", @data_test_selector = "lblMaxMediumWidth" })
+                </div>
+                <div class="control-sm">
+                    <div class="right-inner-icon">
+                        @Html.TextBoxFor(model => model.MaxMediumWidth, new { @data_test_selector = "txtMaxMediumWidth" })
+                        <i class="unit-text">@Admin_Resources.LabelPixels</i>
+                    </div>
+                </div>
+                <div class="col-sm-8 control-non nopadding">@Html.ValidationMessageFor(model => model.MaxMediumWidth, "", new { @data_test_selector = "valMaxMediumWidth" })</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(m => m.MaxSmallWidth, new { @class = "required", @data_test_selector = "lblMaxSmallWidth" })
+                </div>
+                <div class="control-sm">
+                    <div class="right-inner-icon">
+                        @Html.TextBoxFor(model => model.MaxSmallWidth, new { @data_test_selector = "txtMaxSmallWidth" })
+                        <i class="unit-text">@Admin_Resources.LabelPixels</i>
+                    </div>
+                </div>
+                <div class="col-sm-8 control-non nopadding">@Html.ValidationMessageFor(model => model.MaxSmallWidth, "", new { @data_test_selector = "valMaxSmallWidth" })</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(m => m.MaxCrossSellWidth, new { @class = "required", @data_test_selector = "lblMaxCrossSellWidth" })
+                </div>
+                <div class="control-sm">
+                    <div class="right-inner-icon">
+                        @Html.TextBoxFor(model => model.MaxCrossSellWidth, new { @data_test_selector = "txtMaxCrossSellWidth" })
+                        <i class="unit-text">@Admin_Resources.LabelPixels</i>
+                    </div>
+                </div>
+                <div class="col-sm-8 control-non nopadding">@Html.ValidationMessageFor(model => model.MaxCrossSellWidth, "", new { @data_test_selector = "valMaxCrossSellWidth" })</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(m => m.MaxThumbnailWidth, new { @class = "required", @data_test_selector = "lblMaxThumbnailWidth" })
+                </div>
+                <div class="control-sm">
+                    <div class="right-inner-icon">
+                        @Html.TextBoxFor(model => model.MaxThumbnailWidth, new { @data_test_selector = "txtMaxThumbnailWidth" })
+                        <i class="unit-text">@Admin_Resources.LabelPixels</i>
+                    </div>
+                </div>
+                <div class="col-sm-8 control-non nopadding">@Html.ValidationMessageFor(model => model.MaxThumbnailWidth, "", new { @data_test_selector = "valMaxThumbnailWidth" })</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                <div class="control-label">
+                    @Html.LabelFor(m => m.MaxSmallThumbnailWidth, new { @class = "required", @data_test_selector = "lblMaxSmallThumbnailWidth" })
+                </div>
+                <div class="control-sm">
+                    <div class="right-inner-icon">
+                        @Html.TextBoxFor(model => model.MaxSmallThumbnailWidth, new { @data_test_selector = "txtMaxSmallThumbnailWidth" })
+                        <i class="unit-text">@Admin_Resources.LabelPixels</i>
+                    </div>
+                </div>
+                <div class="col-sm-8 control-non nopadding">@Html.ValidationMessageFor(model => model.MaxSmallThumbnailWidth, "", new { @data_test_selector = "valMaxSmallThumbnailWidth" })</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="control-non"><button id="btnGenerateImages" class="btn-text btn-text-secondary btn-margin-left" onclick="return Store.prototype.GenerateImages();" type="button" data-test-selector="btnGenerateImages">@Admin_Resources.LabelGenerateImages</button></div>
+        </div>
+        @Html.HiddenFor(x => x.PortalId)
+        @Html.HiddenFor(x => x.PortalDisplaySettingsId)
+    }
+</div>
+@*Important Div to render media upload popup*@
+<div id="divMediaUploaderPopup"></div>
+@Scripts.Render("~/bundles/jqueryval")

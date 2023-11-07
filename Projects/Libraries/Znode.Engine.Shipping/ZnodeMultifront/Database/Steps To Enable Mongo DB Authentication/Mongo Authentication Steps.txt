@@ -1,0 +1,29 @@
+1.Start MongoDB from command prompt 
+ Go to root directory of MongoDB
+ For Ex.:"C:\Program Files\MongoDB\Server\4.2\bin"
+
+2.Execute Following Command 
+  mongo servername/DBname
+  For Ex.: mongo localhost/ZnodeMultifront_9_7_3_0
+
+3.Create a user for the DB.
+For Ex.:
+>db.createUser({user: "znode", pwd: "admin12345", roles: [{role: "readWrite",db:"ZnodeMultifront_9_7_3_0"}]});
+
+4.Press ctrl C ( to exit from mongo CMD ) 
+
+5.GO to your windows MongoDB service and copy the path from service properties from all executable keep that path to recreate the service.
+
+"C:\Program Files\MongoDB\Server\4.2\bin>mongod --dbpath "E:\Znode\Multifront v9.7.3.0\MongodbDataFiles" --logpath "E:\Znode\Multifront v9.7.3.0\MongodbDataFiles\logs.txt"  --install --serviceName "MongoDB""
+
+6.Open CMD as Administrator to stop and remove MongoDB service
+execute following commands
+NET STOP MongoDB
+SC DELETE MongoDB 
+
+7.Then recreate the mongodb service for mongo authentication
+ For Ex.:
+C:\Program Files\MongoDB\Server\4.2\bin>mongod --dbpath "E:\Znode\Multifront v9.7.3.0\MongodbDataFiles" --logpath "E:\Znode\Multifront v9.7.3.0\MongodbDataFiles\logs.txt"  --auth --install --serviceName "MongoDB"
+
+8.Start the new newly created service
+ NET START MongoDB

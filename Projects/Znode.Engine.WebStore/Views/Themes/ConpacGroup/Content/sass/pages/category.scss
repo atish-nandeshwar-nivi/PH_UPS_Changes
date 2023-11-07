@@ -1,0 +1,129 @@
+﻿//  Used on Category List page, Product list page and PDP page.
+.b2b-instore-pickup{background-color:$base-primary-light;color:$white;font-size:$base-font-size + 6;
+    a{padding-left:25px;font-size:$base-font-size;color:$white;}
+}
+//  Used on Category List page, Product list page and PDP page.
+.b2b-breadcrumbs{padding:10px 0;color:$base-tertiary-light;text-transform:uppercase;letter-spacing:1.25px;border-bottom:1px solid $border-primary;font-size:12px;min-height: 44px;
+    a{color:$base-tertiary-light;
+        &.home-icon{font-size:$base-font-size;padding-right: 5px !important;}
+        &:hover{color:$base-primary-light;}
+    }
+}
+
+ .b2b-brand-list, .b2b-checkout-page, .b2b-product-view-details, .b2b-thanks-page, .b2b-quote-page {
+    box-shadow:$dividing-shadow;-moz-box-shadow:$dividing-shadow;-webkit-box-shadow:$dividing-shadow;}
+.b2b-products-list{border:1px solid $border-primary;}
+//Used on Catelogy list page for displaying inventory details of each product.
+.product-inventory{background-color: #FAFAFA;padding-left:5px;
+         .error-msg{font-size:12px;}
+}
+.product-inventory-title{color: $inventory-product-title;font-family: Roboto-Medium;font-size: 12px;font-weight: 500;letter-spacing: 0.11px;line-height: 24px;}
+.product-inventory-count{display:inline-block;float:left;color: $inventory-product-count;font-family: Roboto-Medium;font-size: 12px;letter-spacing: 0.11px;line-height: 24px;margin-right:7px;}
+.product-inventory-location{display:inline-block;color:$inventory-product-count;font-family: Roboto-Medium;font-size: 12px;letter-spacing: 0.11px;line-height: 24px;}
+
+//Home Page Catgeory
+.category-list-widget{
+    .view-option-category {display:block;
+        ul {
+            list-style: none;padding: 0px;
+            li{
+                width:33%;padding: 10px;display:inline-flex;
+                img{padding:0px;width: auto;min-height: 250px;display: block;height: 250px;margin-left:auto;margin-right:auto;}
+            }
+        }
+    }
+}
+.category-list {
+    .view-option-category{
+       li{
+                width:25%;padding: 10px;
+                img{padding:20px;width: 100%;min-height: 303px;display: block;}
+            }
+    }
+}
+
+
+@include screensize(x-small){
+    #layout-category .advertisement-banner .owl-item{padding:35px 10px;}
+    .category-list-widget{
+        .view-option-category {
+            ul {
+            
+                li{
+                    width:100%;
+                }
+            }
+        }
+    }
+    .category-list {
+        .view-option-category{
+           li{
+                    width:100%;
+             }
+           }
+    }
+}
+
+@include screensize(xl-small){
+}
+
+@include screensize(small){
+    #layout-category .advertisement-banner .owl-item{padding:10px;}
+    .category-list-widget{
+        .view-option-category {
+            ul {
+            
+                li{
+                    width:33%;
+                }
+            }
+        }
+    }
+    .category-list {
+        .view-option-category{
+           li{
+                    width:25%;
+             }
+           }
+    }
+}
+
+@include screensize(desktop){
+    .category-list-widget{
+    .view-option-category {display:block;
+        ul {
+            list-style: none;padding: 0px;
+            li{
+                width:33%;padding: 10px;display:inline-flex;
+                img{padding:0px;width: auto;min-height: 250px;display: block;height: 250px;margin-left:auto;margin-right:auto;}
+            }
+        }
+    }
+}
+    .category-list {
+    .view-option-category{
+       li{
+                width:25%;padding: 10px;
+                img{padding:20px;width: 100%;min-height: 303px;display: block;}
+            }
+        }
+    }
+}
+@include screensize(xx-large){
+    .category-list-widget{
+    .view-option-category {
+        ul {
+            li{
+                img{min-height: 400px;}
+            }
+        }
+    }
+}
+    .category-list {
+    .view-option-category{
+       li{
+                img{min-height: 418px;}
+            }
+        }
+    }
+}

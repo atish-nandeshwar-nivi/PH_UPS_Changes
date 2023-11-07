@@ -1,0 +1,39 @@
+﻿@using Znode.Engine.Admin.ViewModels;
+@model AnalyticsViewModel
+@{
+    ViewBag.Title = Admin_Resources.LabelAdmin + " | " + Admin_Resources.Multifront; ;
+    string actionName = ViewContext.Controller.ValueProvider.GetValue("action").RawValue.ToString();
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    string FormId = "frmAnalytics";
+}
+<div class="col-sm-12 title-container">
+    <h1>@GlobalSetting_Resources.TitleGlobalSetting</h1>
+    <div class="pull-right btn-container">
+        <a id="dvSave" data-test-selector="linkSave" class="btn-text btn-text-secondary" onclick="SaveCancel.prototype.SubmitForm('frmAnalytics')">Save</a>
+    </div>
+</div>
+<div class="main-wrapper">
+    <!--Left Panel-->
+    @Html.Partial("~/Views/Shared/_asideGlobalSettingPanel.cshtml")
+    <section class="main-container">
+        @using (Html.BeginForm("UpdateAnalyticsData", "GeneralSetting", FormMethod.Post, new { id = "frmAnalytics", @class = "dirtyignore" }))
+        {
+            <h3 class="section-heading" data-test-selector="hdgAnalyticsSettings">@GlobalSetting_Resources.LabelAnalyticsSettings</h3>
+            <div class="col-sm-12 nopadding analytics-json-field">
+                    <div class="form-group">
+                        <div class="col-sm-12 nopadding">
+                            <div class="control-label">
+                                @Html.LabelFor(model => model.AnalyticsJSONKey, new { @data_test_selector = "lblAnalyticsJSONKey" })
+                            </div>
+                            <div class="control-md">
+                                @Html.TextAreaFor(model => model.AnalyticsJSONKey, new { @rows = "15", @data_test_selector = "txtAnalyticsJSONKey" })
+                            </div>
+                            <div class="help-text">
+                                <em class="z-help-circle" data-toggle="tooltip" data-placement="right" title="" data-original-title="@Admin_Resources.HelpTextAnalyticsJSONKey"></em>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        }
+    </section>
+</div>

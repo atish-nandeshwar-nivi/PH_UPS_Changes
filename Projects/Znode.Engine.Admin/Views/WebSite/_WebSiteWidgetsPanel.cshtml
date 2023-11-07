@@ -1,0 +1,33 @@
+﻿@using Znode.Libraries.ECommerce.Utilities
+@using Znode.Libraries.Resources
+@using Znode.Engine.Admin.Helpers
+
+@model Znode.Engine.Admin.ViewModels.WebSiteLogoViewModel
+@{
+    var lstAreas = Model?.Widgets?.CMSWidgetsList?.GroupBy(x => x.TemplateName)
+                   .Select(y => y.First())
+                   .ToList();
+}
+@if (!Equals(lstAreas, null))
+{
+    foreach (var item in lstAreas)
+    {
+        <li>
+            @{
+                string input = item.TemplateName;
+                item.TemplateName = input.Replace(".cshtml", "");
+                string template = item.TemplateName.Replace("_", "");
+                template = string.IsNullOrEmpty(Admin_Resources.ResourceManager.GetString(string.Concat(AdminConstants.ZWidgetFileKey, template))) ? template : Admin_Resources.ResourceManager.GetString(string.Concat(AdminConstants.ZWidgetFileKey, template));
+            }
+            @Ajax.AuthorizedRawActionLink(template,
+                         "GetPortalAssociatedWidgets", "WebSite", new { cmsMappingId = Model?.PortalId, typeOfMapping = Model.Widgets.TypeOFMapping, templatePath = item.TemplatePath, displayName = HttpUtility.UrlEncode(Model.Widgets.DisplayName), fileName = HttpUtility.UrlEncode(item.TemplateName) },
+                         new AjaxOptions { UpdateTargetId = "WebSiteConfigurationDiv", InsertionMode = InsertionMode.Replace, OnSuccess = "ZnodeBase.prototype.activeAsidePannelAjax(this);" }, new { @id = item.TemplateName, @data_test_selector = "link" + item.TemplateName.Replace("_", "") })
+        </li>
+                    }
+                }
+<script type="text/javascript">
+    $(window).on("load",function (){
+        var fileName = @Html.RenderBlock(Newtonsoft.Json.JsonConvert.SerializeObject(Model?.FileName));
+        fileName ? $("#"+fileName+"").click() : "" ;
+    });
+</script>

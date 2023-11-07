@@ -1,0 +1,19 @@
+﻿@using Znode.Engine.WebStore.Agents
+@using Znode.Libraries.ECommerce.Utilities
+@{
+    int portalId = PortalAgent.CurrentPortal.PortalId;
+}
+<div class="container-fluid">
+    <div class="row">
+        <div class="box-content-wrap-4">
+            <div class="box-content-wrap-4-in">
+                @Html.RenderMessage("HomepageRequestAQuote")
+            </div>
+        </div>
+    </div>
+</div>
+<footer id="layout-footer" class="footer" role="contentinfo">
+    <z-widget>@Html.WidgetPartial("Footer", "Footer", "102", "PortalMapping")</z-widget>
+</footer>
+
+

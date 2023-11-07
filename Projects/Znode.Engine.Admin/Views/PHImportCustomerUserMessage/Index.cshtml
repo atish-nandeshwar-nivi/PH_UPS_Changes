@@ -1,0 +1,49 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<div class="row body-wrapper">
+
+    <div class="col-sm-12 title-container">
+        <h1 data-test-selector="hdgImport">Import Customer User Message</h1>
+        <div class="pull-right">
+            <div class="pull-right">
+                <a href="/PHImportCustomerUserMessage/CustomerUserMessageLogs" class="btn-text btn-text-secondary margin-left-10">Logs</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 page-container">
+        <div class="form-group">
+            <div class="col-sm-12 nopadding">
+                @using (Html.BeginForm("ImportCustomerUserMessage", "PHImportCustomerUserMessage", null, FormMethod.Post, new { enctype = "multipart/form-data" }))
+                {
+                    <div class="control-label">
+                        <label class="required" data-test-selector="lblFileName" for="FilePath">File Name</label>
+                        <span class="sub" data-test-selector="spnCSVFileInstructionText">Only select file with a .csv extension.</span>
+                    </div>
+                    <div class="control-md">
+                        <div class="file-upload dirtyignore">
+                            <span class="btn-text btn-text-secondary" title="Upload" data-test-selector="spnUpload">Browse</span>
+                            <input class="btn-text btn-text-secondary" id="customerusermessagefile" name="FilePath" type="file" accept=".csv" value="">
+                            <span class="field-validation-valid" data-valmsg-for="FilePath" data-valmsg-replace="true"></span>
+                            <span id="fileName" class="file-upload-name" data-test-selector="spnFileName"></span>
+                        </div>
+                        <span class="field-validation-error" id="error-file-upload" data-test-selector="valFileUpload">@ViewBag.FileMessage</span>
+                    </div>
+                    <button type="submit" class="btn-text btn-text-secondary margin-left-0">Import</button>
+                }
+                <a href="/PHImportCustomerUserMessage/DownloadImportCustomerUserMessage" class="btn-text btn-text-secondary margin-left-0" download>Download Template</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('input[type="file"]').change(function (e) {
+            var fileName = e.target.files[0].name;
+            $("#fileName").text(fileName);
+        });
+    });
+</script>

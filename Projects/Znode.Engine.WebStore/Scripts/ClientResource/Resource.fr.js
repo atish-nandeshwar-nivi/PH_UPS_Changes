@@ -1,0 +1,55 @@
+var fr = /** @class */ (function () {
+    function fr() {
+        this.ErrorEmailAddress = "Veuillez utiliser une adresse e-mail valide.";
+        this.RequiredEmailId = "Email ID is required.";
+        this.RequiredNumericValue = "Please enter numeric value.";
+        this.RequiredFirstName = "First name is required.";
+        this.RequiredLastName = "Last name is required.";
+        this.ErrorPhoneNumber = "Enter valid phone number.";
+        this.RequiredShippingAddress = "Please add shipping address.";
+        this.RequiredBillingAddress = "Please add billing address.";
+        this.SelectShippingOption = "Please select shipping option.";
+        this.SelectPaymentOption = "Please select payment option";
+        this.SelectCOD = "Please select COD for over due amount is less than or equals to zero.";
+        this.ErrorPaymentApplication = "Unable to contact payment application. Please reload the page and try again.";
+        this.ErrorPaymentAsNoGatewayAvailable = "Could not proceed with payment as no payment gateway available with this selection.";
+        this.ProcessingPayment = "Your payment is processing. Please wait and do not close this window.";
+        this.SelectAtleastOneOrder = "At least one order should be selected.";
+        this.SelectAtleastOneRecord = "Please select at least one record";
+        this.ErrorQuantity = "Veuillez saisir la quantité valide";
+        this.ErrorProcessOrder = "Failed to process order";
+        this.ErrorOrderPlacementCardDataMissing = "Error occurred during processing an order.Order could not be placed as card data is missing.";
+        this.ErrorOrderPlacement = "Error occurred during processing order. Order could not be placed.";
+        this.SelectCODForZeroOrderTotal = "Please select COD for Zero Order Total.";
+        this.ErrorProcessPayment = "Unable to process Payment.";
+        this.ErrorProductQuantity = "Please specify valid product quantity.";
+        this.RequiredProductQuantity = "Please specify the quantity of product(s).";
+        this.SuccessMailSending = "Mail sent successfully.";
+        this.ErrorMailSending = "Error in mail sending.";
+        this.ErrorValidSKU = "Please enter valid sku.";
+        this.ErrorValidQuantity = "Enter valid quantity.";
+        this.ErrorWholeNumber = "Enter whole number";
+        this.CallForPricing = "Call for pricing";
+        this.ErrorSelectedQuantityExceedsMaxCartQuantity = "Selected quantity exceeds product maximum given current Shopping Cart quantities.";
+        this.ErrorSelectedQuantityLessThanMinSpecifiedQuantity = "Selected quantity is less than minimum specified quantity.";
+        this.ErrorAddToCartFromPDPOrQuickView = "This product requires a mandatory personalized message, therefore, can be added to cart only from the product details page.";
+        this.RequiredTemplateName = "Please enter template name.";
+        this.EnterQuantityHaving = "Please enter quantity having ";
+        this.XNumbersAfterDecimalPoint = " numbers after decimal point.";
+        this.SelectedQuantityBetween = "Selected quantity should be between ";
+        this.To = " to ";
+        this.FullStop = ".";
+        this.SelectedCardType = "The selected card type is of ";
+        this.SelectCardNumberAndCardType = ".  Please check the credit card number and the card type.";
+        this.ErrorProcessCreditCardPayment = "We were unable to process your credit card payment. <br /><br />Reason:<br />";
+        this.ContactUsToCompleteOrder = "<br /><br />If the problem persists, contact us to complete your order.";
+        this.EnterMinOrderOf = "Please enter minimum Order of ";
+        this.EnterMaxOrderOf = "Please enter maximum Order of ";
+        this.TemplateNameAlreadyExist = "Template name already exists.";
+        this.CheckingInventory = "Checking Inventory...";
+        this.LableBrand = "Brands";
+        this.AccessDeniedMessage = "The page cannot be displayed. Make sure you are authorized to view this page.";
+    }
+    return fr;
+}());
+//# sourceMappingURL=Resource.fr.js.map

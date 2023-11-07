@@ -1,0 +1,105 @@
+﻿@using Znode.Engine.WebStore.ViewModels
+@model PaymentTokenViewModel
+
+<head>
+    <script type="text/javascript">
+        $(function () {
+            $("#AuthNetIFrame").show();
+            var delayInMilliseconds = 2000;
+
+            setTimeout(function () {
+                 $("#send_token").attr({ "action": '@Model.PaymentGatewayTokenUrl', "target": "AuthNetIFrame" }).submit();
+            }, delayInMilliseconds);
+        });
+    </script>
+</head>
+@Html.Hidden("IsIframeRenderInPopup", Model.IsIframeRenderInPopup)
+@Html.Hidden("OrderNumber", Model.OrderNumber)
+@Html.Hidden("CustomerProfileId")
+
+@if (Model.IsIframeRenderInPopup)
+{
+
+    <!--  Modal -->
+    <div class="modal fade AuthorizeNetModal" id="AuthorizeNetModal">
+        <div class="modal-dialog modal-dialog-centered modal-lg rounded-0">
+            <div class="modal-content">
+
+                <div class="modal-header AuthorizeNetHeader">
+                    <h4 class="modal-title pl-3 text-uppercase">@WebStore_Resources.PayAndSubmit</h4>
+                    <button type="button" class="close close-circle-icon" data-test-selector="btnAuthorizeNetClose" data-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="iframe_holder" class="center-block">
+                        <iframe id="AuthNetIFrame" class="embed-responsive-item authorizenetIframe panel m-sm-auto d-sm-block" name="AuthNetIFrame" frameborder="0"></iframe>
+                    </div>
+
+                    <form id="send_token" action="" method="post" target="AuthNetIFrame">
+                        <input type="hidden" name="token" value='@Model.PaymentGatewayToken' />
+                    </form>
+                    <div id="TokenForm"></div>
+                    @if (string.IsNullOrEmpty(Model.CustomerProfileId) && Model.UserId > 0)
+                    {
+                        <div class="form-group saveCreditCard float-left pt-3 mb-0" id="Save-credit-card">
+                            <div class="col-12 p-0">
+                                <div class="control-md control-non styled-input mb-0" id="saveforfuturecheckbox">
+                                    <input id="AuthNetSaveCreditCard" name="SaveCreditCard" type="checkbox">
+                                    <label for="AuthNetSaveCreditCard">@WebStore_Resources.SaveCreditCardForFutureUse</label>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+}
+else
+{
+    { Html.RenderPartial("_AuthorizedNetIframeHtml", Model); }
+}
+<script type="text/javascript">
+    (function () {
+        if (!window.AuthorizeNetIFrame) window.AuthorizeNetIFrame = {};
+        AuthorizeNetIFrame.onReceiveCommunication = function (querystr) {
+            var params = parseQueryString(querystr);
+            switch (params["action"]) {
+                case "successfulSave":
+                    break;
+                case "cancel":
+                    var IsIframeRenderInPopup = document.getElementById('IsIframeRenderInPopup').value;
+                    Checkout.prototype.HideAuthorizeIframe(IsIframeRenderInPopup);
+                    break;
+                case "Ok":
+                    break;
+                case "transactResponse":
+                    var response = params["response"];
+                    if ($("#QuoteId").val() > 0) {
+                        Quote.prototype.SubmitAuthorizeNetPayment(response);
+                    }
+                    else {
+                        Checkout.prototype.SubmitAuthorizePayment(response);
+                    }
+                    var ifrm = document.getElementById("AuthNetIFrame");
+                    ifrm.style.display = 'none';
+            }
+        };
+
+        function parseQueryString(str) {
+            var vars = [];
+            var arr = str.split('&');
+            var pair;
+            for (var i = 0; i < arr.length; i++) {
+                pair = arr[i].split('=');
+                vars.push(pair[0]);
+                vars[pair[0]] = unescape(pair[1]);
+            }
+            return vars;
+        }
+    }());
+</script>

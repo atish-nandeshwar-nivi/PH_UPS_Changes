@@ -1,0 +1,235 @@
+﻿@using Znode.Engine.WebStore.ViewModels
+@using Znode.Libraries.ECommerce.Utilities
+@using Microsoft.AspNet.Identity
+@model UserViewModel
+@using Znode.Engine.WebStore.Agents;
+@{
+    var currentPortal = PortalAgent.CurrentPortal;
+    int portalId = currentPortal.PortalId;
+    UserApproverListViewModel approvers = new UserApproverListViewModel { UserApprover = new List<UserApproverViewModel>() };
+    if (Model.HasApprovers || Model.IsApprover)
+    {
+        approvers = DependencyResolver.Current.GetService<IUserAgent>().GetUserApproverList(0, true);
+    }
+    Model.OrderList = Model.OrderList ?? new List<OrdersViewModel>();
+    Model.AllPendingOrdersList = Model.AllPendingOrdersList ?? new List<AccountQuoteViewModel>();
+    string CustomerPaymentGUID = Model.CustomerPaymentGUID;
+    string PONumber = Model?.UserGlobalAttributes?.FirstOrDefault(x => x.AttributeCode == "PONumber")?.AttributeValue;
+    string OpenAccountNumber = Model?.UserGlobalAttributes?.FirstOrDefault(x => x.AttributeCode == "BillingAccountNumber")?.AttributeValue;
+    bool isEnableReturnRequest = GlobalAttributeHelper.EnableReturnRequest();
+}
+
+<div id="layout-account-dashboard" class="main-wrapper col">
+    <div class="row">
+        <div class="container-fluid profile-dashboard">
+            <div class="row">
+                <div class="container">
+                    @Html.Partial("_AccountMenuDashboard")
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row user-account mt-4">
+                <div class="col-12 col-lg-8">
+                    <div class="col-12 mb-4 py-2 px-0">
+                        <div class="col-12 dashboard-sections dashboard-order-history">
+                            @if (!Equals(Model, null))
+                            {
+                                <div class="row">
+                                    <div class="col-12 p-0 dashboard-content">
+                                        <div class="col-12 b2b-section-header">
+                                            <h2 class="heading">@WebStore_Resources.LinkTextOrderHistory</h2>
+                                            @if (!Equals(Model.OrderList, null) && Model.OrderList.Any())
+                                            {
+                                                <a href="/User/History" class="btn btn-secondary view-all-btn" data-test-selector="linkTextCompleteOrderHistory">@WebStore_Resources.LabelViewAll</a>
+                                            }
+                                        </div>
+                                        <div class="col-12 b2b-section-body py-0 px-3">
+                                            @Html.Partial("_OrderHistory", Model.OrderList?.OrderByDescending(e => e.OmsOrderId).ThenByDescending(i => i.OrderDate)?.Take(7))
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    @*Quotes History Section Starts*@
+                    <div class="col-12 mb-4 py-2 px-0 d-none">
+                        <div class="col-12 dashboard-sections dashboard-order-history">
+                            @if (!Equals(Model, null))
+                            {
+                                <div class="row">
+                                    <div class="col-12 p-0 dashboard-content">
+                                        <div class="col-12 b2b-section-header">
+                                            <h2 class="heading">@WebStore_Resources.LabelQuoteHistory</h2>
+                                            @if (Model.QuoteList.Count > 0)
+                                            {
+                                                <a href="/Quote/QuoteHistory" class="btn btn-secondary view-all-btn">@WebStore_Resources.LabelViewAll</a>
+                                            }
+                                        </div>
+                                        <div class="col-12 b2b-section-body py-0 px-3">
+                                            @Html.Partial("_QuoteList", Model.QuoteList)
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+
+                    @*Pending Order Section Starts*@
+                    <div class="col-12 mb-4 py-2 px-0">
+                        <div class="col-12 dashboard-sections dashboard-order-history">
+                            @if (!Equals(Model, null))
+                            {
+                                <div class="row">
+                                    <div class="col-12 p-0 dashboard-content">
+                                        <div class="col-12 b2b-section-header">
+                                            <h2 class="heading">@WebStore_Resources.LabelPendingOrderApproval</h2>
+                                            @if (Model.PendingOrdersCount > 0)
+                                            {
+                                                <a href="/User/UserQuoteHistory" class="btn btn-secondary view-all-btn">@WebStore_Resources.LabelViewAll</a>
+                                            }
+                                        </div>
+                                        <div class="col-12 b2b-section-body py-0 px-3">
+                                            @Html.Partial("_QuoteHistory", Model.AllPendingOrdersList.OrderByDescending(e => e.OmsQuoteId).ThenByDescending(i => i.CreatedDate)?.Take(7))
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    @*Pending Order Section Ends*@
+
+                    <div class="col-12 mb-4 py-2 px-0">
+                        <div class="dashboard-sections dashboard-order-history dashboard-addresses-custom">
+                            <div class="row pt-3 dashboard-content px-3">
+                                <div class="col-12 border-bottom pb-3">
+                                    <div class="d-flex address-book-section justify-content-between align-items-start align-items-sm-center flex-column flex-sm-row">
+                                        <div>
+                                            <h2 class="heading mb-0">@WebStore_Resources.TitleAddressBook</h2>
+                                        </div>
+                                        <div class="row p-sm-1 my-3 my-md-0 mx-0">
+                                            <a href="/User/AddressBook" class="btn btn-secondary mr-2 mb-2 mb-sm-0 px-4">@WebStore_Resources.LabelButtonView</a>
+                                            @if (Model.Permission)
+                                            {
+                                                <a href="/User/Address" class="btn btn-primary mb-2 mb-sm-0 px-4">@WebStore_Resources.LabelAddNewAddress</a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                @if (Model.Addresses?.Count > 0)
+                                {
+                                    <div class="col-12 b2b-section-body py-0 px-3">
+                                        <div class="row dashboard-addresses">
+                                            <div class="col-12 col-md-6 py-4 billing-shipping-address">
+                                                <h3 class="heading">@WebStore_Resources.SubTitlePrimaryShipping</h3>
+                                                <label for="defaultshippingId" class="visuallyhidden">Primary Shipping Address</label>
+                                                @if (!Equals(Model.ShippingAddress, null))
+                                                    {
+                                                    string defaultshippingId = Model.ShippingAddress?.AddressId.ToString();
+                                                    Model.AddressList?.ForEach(x => x.Selected = x.Value == defaultshippingId);
+                                                    if (HelperUtility.IsNull(Model.AddressList)) { Model.AddressList = new List<SelectListItem>(); }
+
+                                                    @Html.DropDownListFor(m => defaultshippingId, Model.AddressList, new { @class = "account-user-address w-100 pr-20", @onchange = "User.prototype.SetPrimaryAddress(this, 'shipping')" })
+                                                    Model.ShippingAddress.RoleName = Model.RoleName;
+                                                    <div class="col-12 p-0" id="defaultShippingAddressDiv">
+                                                        @Html.Partial("../User/_DisplayAddress", Model.ShippingAddress ?? new AddressViewModel())
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <p>@WebStore_Resources.ErrorNoPrimaryAddress</p>
+                                                }
+                                            </div>
+                                            <div class="col-12 col-md-6 py-4 billing-shipping-address">
+                                                <h3 class="heading">@WebStore_Resources.SubTitlePrimaryBilling</h3>
+                                                <label for="defaultbillingId" class="visuallyhidden">Primary Billing Address</label>
+                                                @if (!Equals(Model.BillingAddress, null))
+                                                    {
+                                                    Model.BillingAddress.RoleName = Model.RoleName;
+                                                    string defaultbillingId = Model.BillingAddress?.AddressId.ToString();
+                                                    Model.AddressList?.ForEach(x => x.Selected = x.Value == defaultbillingId);
+
+                                                    @Html.DropDownListFor(m => defaultbillingId, Model.AddressList, new { @class = "account-user-address w-100 pr-20", @onchange = "User.prototype.SetPrimaryAddress(this, 'billing')" })
+                                                        <div class="col-12 p-0" id="defaultBillingAddressDiv">
+                                                        @Html.Partial("../User/_DisplayAddress", Model.BillingAddress ?? new AddressViewModel())
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <p>@WebStore_Resources.ErrorNoPrimaryAddress</p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-12 account-recent-orders">
+                                        <div class="row">
+                                            <div class="col-12 pl-4 py-4">
+                                                <div class="b2b-recent-order-detail">@WebStore_Resources.TextNoAddressesSaved</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="col-12 mb-4 py-2 px-0">
+                        <div class="col-12 dashboard-sections">
+                            <div class="row">
+                                <div class="col-12 p-0 dashboard-content your-profile-dashboard">
+                                    <div class="col-12 b2b-section-header">
+                                        <h2 class="heading">@WebStore_Resources.TextYourProfile</h2>
+                                        <a href="/User/EditProfile" class="btn btn-secondary view-all-btn">@WebStore_Resources.TextView</a>
+                                    </div>
+                                    <div class="col-12 b2b-section-body my-2">
+                                        <div class="col-12 p-0"><label class="font-weight-bold">@WebStore_Resources.LabelDashboardUserName</label>: @User.Identity.GetUserName()</div>
+                                        <div class="col-12 p-0 d-flex"><label class="font-weight-bold acc-first-name">@WebStore_Resources.LabelFirstName:</label><span class="form-field"> @Model.FirstName</span></div>
+                                        <div class="col-12 p-0 d-flex"><label class="font-weight-bold acc-last-name">@WebStore_Resources.LabelLastName:</label><span class="form-field"> @Model.LastName</span></div>
+                                        <div class="col-12 p-0"><label class="font-weight-bold">@WebStore_Resources.LabelPhoneNumber:</label> @Model.PhoneNumber</div>
+                                        <div class="col-12 p-0"><label class="font-weight-bold">@WebStore_Resources.TextEmail:</label> @Model.Email</div>
+                                        <button type="button" onclick="location.href='@Url.Action("ChangePassword", "User")';" class="btn btn-primary mb-4 mt-3" id="user-register">@WebStore_Resources.ChangePasswordButtonText</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-4 py-2 px-0">
+                        <div class="col-12 dashboard-sections">
+                            <div class="row">
+                                <div class="col-12 p-0 dashboard-content">
+                                    <div class="col-12 b2b-section-header">
+                                        <h2 class="heading" data-test-selector="hdgSavedCreditCards">@WebStore_Resources.LabelSavedCreditCards</h2>
+                                    </div>
+                                    <div class="col-12 b2b-section-body">
+                                        <div class="col-12 p-0">
+                                            @Html.RenderBlock(WebStore_Resources.CreditCardMessageText)
+                                        </div>
+                                        <div class="col-12 p-0 my-4">
+                                            <a href="/User/GetSavedCreditCards" class="btn btn-secondary view-all-btn" data-test-selector="linkSavedCC">@WebStore_Resources.ButtonTextManageCards</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            
+        </div>
+        @Html.Hidden("hdnCustomerGUID")
+        @Html.Hidden("hdnGatwayName")
+        @Html.Hidden("paymentProfileId")
+        @Html.Hidden("hdnPaymentCode")
+        @Html.Hidden("hdnPaymentApplicationSettingId")
+    </div>
+</div>
+<script>$(document).ready(function () { User.prototype.ShowCardPaymentOptions("@CustomerPaymentGUID"); });</script>
